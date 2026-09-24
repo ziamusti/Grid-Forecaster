@@ -1,0 +1,22 @@
+# Large raw and generated datasets
+data/raw/
+data/processed/*.csv
+
+# Markdown documentation
+*.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Editors and IDEs
+.vscode/
+.idea/
