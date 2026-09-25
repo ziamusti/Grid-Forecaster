@@ -20,3 +20,10 @@ venv/
 # Editors and IDEs
 .vscode/
 .idea/
+
+# Trainierte Modelle und erzeugte Vorhersagen
+models/
+reports/*_predictions_*.csv
+
+# Temporäre Editor-Dateien
+*.save

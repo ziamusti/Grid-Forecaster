@@ -55,6 +55,7 @@ RENEWABLE_COLUMNS = (
     "solar_mwh",
     "other_renewables_mwh",
 )
+TOTAL_GENERATION_COLUMNS = tuple(GENERATION_COLUMNS.values())
 
 
 def parse_local_datetime(value: str) -> datetime:
@@ -183,20 +184,41 @@ def main() -> None:
         row = {**gen}
         row.update({name: load[name] for name in CONSUMPTION_COLUMNS.values()})
 
+        # Nach dem deutschen Atomausstieg bedeutet ein leeres SMARD-Feld
+        # für Kernenergie 0 MWh und nicht einen unbekannten Messwert.
+        timestamp_local = row["timestamp_local"]
+        if (
+            isinstance(timestamp_local, datetime)
+            and timestamp_local >= datetime(2023, 4, 16)
+            and row["nuclear_mwh"] is None
+        ):
+            row["nuclear_mwh"] = Decimal("0")
+
         renewable_values = [row[name] for name in RENEWABLE_COLUMNS]
         if all(isinstance(value, Decimal) for value in renewable_values):
             renewable_total = sum(renewable_values, Decimal("0"))
         else:
             renewable_total = None
-        grid_load = row["grid_load_mwh"]
-        if isinstance(renewable_total, Decimal) and isinstance(grid_load, Decimal) and grid_load != 0:
-            renewable_share = (renewable_total / grid_load * Decimal("100")).quantize(
-                Decimal("0.000001")
-            )
+        generation_values = [row[name] for name in TOTAL_GENERATION_COLUMNS]
+        if all(isinstance(value, Decimal) for value in generation_values):
+            total_generation = sum(generation_values, Decimal("0"))
+        else:
+            total_generation = None
+
+        if (
+            isinstance(renewable_total, Decimal)
+            and isinstance(total_generation, Decimal)
+            and total_generation != 0
+        ):
+            renewable_share = (
+                renewable_total / total_generation * Decimal("100")
+            ).quantize(Decimal("0.000001"))
         else:
             renewable_share = None
+
         row["renewable_generation_mwh"] = renewable_total
-        row["renewable_share_of_grid_load_pct"] = renewable_share
+        row["total_generation_mwh"] = total_generation
+        row["renewable_share_of_generation_pct"] = renewable_share
         output_rows.append(row)
 
     output_columns = [
@@ -206,8 +228,8 @@ def main() -> None:
         *GENERATION_COLUMNS.values(),
         *CONSUMPTION_COLUMNS.values(),
         "renewable_generation_mwh",
-        "renewable_share_of_grid_load_pct",
-        
+        "total_generation_mwh",
+        "renewable_share_of_generation_pct",
     ]
     with OUTPUT_FILE.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=output_columns)
@@ -228,7 +250,8 @@ def main() -> None:
         *GENERATION_COLUMNS.values(),
         *CONSUMPTION_COLUMNS.values(),
         "renewable_generation_mwh",
-        "renewable_share_of_grid_load_pct",
+        "total_generation_mwh",
+        "renewable_share_of_generation_pct",
     ]
     missing = missing_counts(output_rows, numeric_columns)
     utc_gaps = []
@@ -238,15 +261,15 @@ def main() -> None:
             utc_gaps.append((previous.isoformat(), current.isoformat(), hours))
 
     shares = [
-        row["renewable_share_of_grid_load_pct"]
+        row["renewable_share_of_generation_pct"]
         for row in output_rows
-        if isinstance(row["renewable_share_of_grid_load_pct"], Decimal)
+        if isinstance(row["renewable_share_of_generation_pct"], Decimal)
     ]
     shares_over_100 = sum(value > 100 for value in shares)
     missing_target_times = [
         row["timestamp_local"]
         for row in output_rows
-        if row["renewable_share_of_grid_load_pct"] is None
+        if row["renewable_share_of_generation_pct"] is None
     ]
     if missing_target_times:
         missing_target_note = (
@@ -290,17 +313,17 @@ def main() -> None:
         "",
         missing_target_note,
         "",
-        "## Vorläufige Zielvariable",
+        "## Zielvariable",
         "",
-        "Die Zielvariable wurde vorläufig als Summe aus Biomasse, Wasserkraft, Wind Offshore, "
-        "Wind Onshore, Photovoltaik und sonstigen Erneuerbaren geteilt durch die Netzlast berechnet.",
+        "Die Zielvariable ist die Summe aus Biomasse, Wasserkraft, Wind Offshore, Wind Onshore, "
+        "Photovoltaik und sonstigen Erneuerbaren geteilt durch die gesamte Stromerzeugung.",
         "",
         f"- Kleinster berechenbarer Anteil: {decimal_text(min(shares) if shares else None)} %",
         f"- Größter berechenbarer Anteil: {decimal_text(max(shares) if shares else None)} %",
         f"- Stunden über 100 %: {shares_over_100}",
         "",
-        "Werte über 100 % sind bei dieser Definition prinzipiell möglich und müssen fachlich "
-        "diskutiert werden. Die endgültige Definition der Zielvariable ist noch zu bestätigen.",
+        "Die Zielvariable beschreibt den erneuerbaren Anteil an der gesamten in Deutschland "
+        "erfassten Stromerzeugung.",
         "",
         "## Hinweise",
         "",
@@ -314,7 +337,7 @@ def main() -> None:
     print(f"Erstellt: {OUTPUT_FILE.relative_to(PROJECT_ROOT)} ({len(output_rows)} Zeilen)")
     print(f"Erstellt: {REPORT_FILE.relative_to(PROJECT_ROOT)}")
     print(f"UTC-Lücken: {len(utc_gaps)}")
-    print(f"Fehlende Zielwerte: {missing['renewable_share_of_grid_load_pct']}")
+    print(f"Fehlende Zielwerte: {missing['renewable_share_of_generation_pct']}")
 
 
 if __name__ == "__main__":
