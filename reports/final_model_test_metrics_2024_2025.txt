@@ -1,0 +1,5 @@
+Unabhängiger Testzeitraum: 2024–2025
+Teststunden: 17543
+MAE: 9.773 Prozentpunkte
+RMSE: 11.987 Prozentpunkte
+R2: 0.595
