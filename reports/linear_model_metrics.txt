@@ -1,0 +1,3 @@
+MAE: 13.796 Prozentpunkte
+RMSE: 16.225 Prozentpunkte
+R2: 0.204
