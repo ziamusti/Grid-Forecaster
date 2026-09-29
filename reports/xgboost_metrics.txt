@@ -1,0 +1,4 @@
+MAE: 13.335 Prozentpunkte
+RMSE: 15.168 Prozentpunkte
+R2: 0.305
+Beste Iteration: 383

@@ -11,9 +11,12 @@ from sklearn.metrics import (
 from xgboost import XGBRegressor
 
 
-TRAIN_FILE = Path("data/processed/train_2015_2022.csv")
+TRAIN_FILE = Path(
+    "data/processed/train_energy_2015_2022.csv"
+)
+
 VALIDATION_FILE = Path(
-    "data/processed/validation_2023.csv"
+    "data/processed/validation_energy_2023.csv"
 )
 
 REPORT_DIR = Path("reports")
@@ -24,12 +27,28 @@ MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 TARGET = "renewable_share_of_generation_pct"
 
-FEATURES = [
-    "temperature_2m_land_mean_c",
-    "cloud_cover_land_mean_pct",
-    "wind_speed_100m_land_mean_ms",
-    "shortwave_radiation_land_mean_wm2",
-    "wind_speed_100m_offshore_mean_ms",
+ENERGY_COLUMNS = [
+    "renewable_share_of_generation_pct",
+    "renewable_generation_mwh",
+    "total_generation_mwh",
+    "grid_load_mwh",
+    "wind_onshore_mwh",
+    "wind_offshore_mwh",
+    "solar_mwh",
+    "natural_gas_mwh",
+    "hard_coal_mwh",
+    "lignite_mwh",
+]
+
+LAGS = [72, 168]
+
+ENERGY_FEATURES = [
+    f"{column}_lag_{lag}h"
+    for lag in LAGS
+    for column in ENERGY_COLUMNS
+]
+
+CALENDAR_FEATURES = [
     "hour_local",
     "weekday",
     "month",
@@ -38,8 +57,10 @@ FEATURES = [
     "daylight_hours",
 ]
 
+FEATURES = ENERGY_FEATURES + CALENDAR_FEATURES
 
-print("Lade Daten ...")
+
+print("Lade Energiedaten ...")
 
 train = pd.read_csv(TRAIN_FILE)
 validation = pd.read_csv(VALIDATION_FILE)
@@ -51,7 +72,7 @@ x_validation = validation[FEATURES]
 y_validation = validation[TARGET]
 
 
-print("Trainiere XGBoost-Modell ...")
+print("Trainiere XGBoost-Energiemarktmodell ...")
 
 model = XGBRegressor(
     objective="reg:squarederror",
@@ -79,8 +100,6 @@ model.fit(
 print("Erstelle Vorhersagen für 2023 ...")
 
 predictions = model.predict(x_validation)
-
-# Der Grünanteil liegt fachlich zwischen 0 und 100 Prozent.
 predictions = np.clip(predictions, 0, 100)
 
 mae = mean_absolute_error(
@@ -108,7 +127,7 @@ result = pd.DataFrame(
 )
 
 result.to_csv(
-    REPORT_DIR / "xgboost_predictions_2023.csv",
+    REPORT_DIR / "energy_model_predictions_2023.csv",
     index=False,
 )
 
@@ -124,19 +143,19 @@ importance = pd.DataFrame(
 )
 
 importance.to_csv(
-    REPORT_DIR / "xgboost_feature_importance.csv",
+    REPORT_DIR / "energy_model_feature_importance.csv",
     index=False,
 )
 
 
 joblib.dump(
     model,
-    MODEL_DIR / "weather_xgboost.joblib",
+    MODEL_DIR / "energy_xgboost.joblib",
 )
 
 
 with (
-    REPORT_DIR / "xgboost_metrics.txt"
+    REPORT_DIR / "energy_model_metrics.txt"
 ).open("w", encoding="utf-8") as file:
     file.write(f"MAE: {mae:.3f} Prozentpunkte\n")
     file.write(f"RMSE: {rmse:.3f} Prozentpunkte\n")
@@ -147,20 +166,20 @@ with (
 
 
 print()
-print("Ergebnis des XGBoost-Modells:")
+print("Ergebnis des Energiemarktmodells:")
 print(f"MAE: {mae:.3f} Prozentpunkte")
 print(f"RMSE: {rmse:.3f} Prozentpunkte")
 print(f"R2: {r2:.3f}")
 print(f"Beste Iteration: {model.best_iteration}")
 print()
 
-print("Bisheriger Vergleich:")
-print("Baseline MAE: 19.143")
-print("Lineare Regression MAE: 13.796")
-print("Random Forest MAE: 13.335")
+print("Wetter-XGBoost zum Vergleich:")
+print("MAE: 13.335 Prozentpunkte")
+print("RMSE: 15.168 Prozentpunkte")
+print("R2: 0.305")
 print()
 
 print(
     "Modell gespeichert: "
-    "models/weather_xgboost.joblib"
+    "models/energy_xgboost.joblib"
 )

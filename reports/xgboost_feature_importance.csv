@@ -1,0 +1,12 @@
+feature,importance
+shortwave_radiation_land_mean_wm2,0.35874835
+wind_speed_100m_land_mean_ms,0.28737906
+wind_speed_100m_offshore_mean_ms,0.080688514
+hour_local,0.06739211
+is_public_holiday,0.05824204
+is_weekend,0.040173117
+weekday,0.034318384
+daylight_hours,0.024959622
+temperature_2m_land_mean_c,0.020224843
+month,0.018548481
+cloud_cover_land_mean_pct,0.009325515

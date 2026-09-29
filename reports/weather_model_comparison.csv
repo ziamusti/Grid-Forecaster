@@ -1,0 +1,6 @@
+model,mae,rmse,r2
+Baseline,19.143,22.41,-0.518
+Lineare Regression,13.796,16.225,0.204
+Random Forest,13.335,15.352,0.288
+XGBoost,13.335,15.168,0.305
+HistGradientBoosting,13.404,15.238,0.298
