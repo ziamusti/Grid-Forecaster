@@ -1,0 +1,3 @@
+Durchschnittlicher MAE: 4.887 Prozentpunkte
+Durchschnittlicher RMSE: 6.186 Prozentpunkte
+Durchschnittliches R2: 0.870
