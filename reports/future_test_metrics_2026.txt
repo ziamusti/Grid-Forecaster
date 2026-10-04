@@ -1,0 +1,6 @@
+Training: 2015–2025
+Unabhängiger Zukunftstest: Januar–September 2026
+Teststunden: 6380
+MAE: 4.701 Prozentpunkte
+RMSE: 6.016 Prozentpunkte
+R2: 0.904
