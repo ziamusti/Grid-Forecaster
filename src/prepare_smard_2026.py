@@ -10,13 +10,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw" / "smard"
 
 GENERATION_FILE = RAW_DIR / (
-    "Realisierte_Erzeugung_"
-    "202601010000_202609300000_Stunde.csv"
+    "Realisierte_Erzeugung_2026_latest.csv"
 )
 
 CONSUMPTION_FILE = RAW_DIR / (
-    "Realisierter_Stromverbrauch_"
-    "202601010000_202609300000_Stunde.csv"
+    "Realisierter_Stromverbrauch_2026_latest.csv"
 )
 
 
@@ -64,21 +62,5 @@ def main() -> None:
 
     shared.main()
 
-    report = shared.REPORT_FILE.read_text(
-        encoding="utf-8"
-    )
-
-    report = report.replace(
-        "2026-01-01 bis 2026-12-31",
-        "2026-01-01 bis 2026-09-24",
-    )
-
-    shared.REPORT_FILE.write_text(
-        report,
-        encoding="utf-8",
-    )
-
-
 if __name__ == "__main__":
     main()
-    
