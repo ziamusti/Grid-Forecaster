@@ -1,5 +1,7 @@
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+import subprocess
+import sys
 
 import pandas as pd
 import streamlit as st
@@ -14,6 +16,9 @@ FORECAST_FILE = (
     / "grid_forecast_72h_latest.csv"
 )
 
+UPDATE_SCRIPT = PROJECT_ROOT / "src" / "update_live_forecast.py"
+UPDATE_INTERVAL = timedelta(days=3)
+
 
 st.set_page_config(
     page_title="Grid Forecaster",
@@ -22,9 +27,55 @@ st.set_page_config(
 )
 
 
+def forecast_needs_update():
+    """Prüft, ob keine oder nur eine veraltete Prognose vorliegt."""
+
+    if not FORECAST_FILE.exists():
+        return True
+
+    modified_at = datetime.fromtimestamp(
+        FORECAST_FILE.stat().st_mtime,
+        tz=timezone.utc,
+    )
+
+    return datetime.now(timezone.utc) - modified_at >= UPDATE_INTERVAL
+
+
+def update_forecast_if_needed():
+    """Aktualisiert die Prognose beim App-Start höchstens alle drei Tage."""
+
+    if not forecast_needs_update():
+        return None
+
+    try:
+        with st.spinner(
+            "Die Prognosedaten sind älter als drei Tage und werden "
+            "automatisch aktualisiert. Das kann einige Minuten dauern ..."
+        ):
+            subprocess.run(
+                [sys.executable, str(UPDATE_SCRIPT)],
+                cwd=PROJECT_ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+    except subprocess.CalledProcessError as error:
+        details = error.stderr.strip() or error.stdout.strip()
+        return (
+            "Die automatische Aktualisierung ist fehlgeschlagen. "
+            f"{details or error}"
+        )
+
+    return None
+
+
 @st.cache_data
-def load_forecast():
+def load_forecast(file_version):
     """Lädt die aktuelle 72-Stunden-Prognose."""
+
+    # file_version ist der Datei-Zeitstempel und invalidiert den
+    # Streamlit-Cache, sobald eine neue Prognose geschrieben wurde.
+    del file_version
 
     if not FORECAST_FILE.exists():
         raise FileNotFoundError(
@@ -134,9 +185,16 @@ st.write(
 
 
 try:
-    forecast = load_forecast()
+    update_error = update_forecast_if_needed()
 
-except FileNotFoundError as error:
+    if update_error:
+        st.warning(update_error)
+
+    forecast = load_forecast(
+        FORECAST_FILE.stat().st_mtime_ns
+    )
+
+except (FileNotFoundError, OSError) as error:
     st.error(str(error))
     st.stop()
 
