@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 import json
 from pathlib import Path
@@ -56,7 +57,9 @@ RAW_DIR.mkdir(parents=True, exist_ok=True)
 responses = {}
 
 
-for name, (latitude, longitude, is_sea) in LOCATIONS.items():
+def download_location(name, latitude, longitude, is_sea):
+    """Lädt einen Ort; mehrere Aufrufe dürfen parallel laufen."""
+
     parameters = {
         "latitude": latitude,
         "longitude": longitude,
@@ -71,7 +74,7 @@ for name, (latitude, longitude, is_sea) in LOCATIONS.items():
 
     url = API_URL + "?" + urlencode(parameters)
 
-    print(f"Lade Prognose für {name} ...")
+    print(f"Lade Prognose für {name} ...", flush=True)
 
     request = Request(
         url,
@@ -126,7 +129,7 @@ for name, (latitude, longitude, is_sea) in LOCATIONS.items():
     hourly = payload["hourly"]
     times = hourly["time"]
 
-    responses[name] = {
+    location_data = {
         timestamp: {
             variable: hourly[variable][index]
             for variable in VARIABLES
@@ -134,7 +137,27 @@ for name, (latitude, longitude, is_sea) in LOCATIONS.items():
         for index, timestamp in enumerate(times)
     }
 
-    sleep(2)
+    return name, location_data
+
+
+# Die Orte sind voneinander unabhängig. Eine kleine Anzahl paralleler
+# Downloads verkürzt den App-Start deutlich, ohne die API mit allen Orten
+# gleichzeitig zu belasten.
+with ThreadPoolExecutor(max_workers=5) as executor:
+    downloads = [
+        executor.submit(
+            download_location,
+            name,
+            latitude,
+            longitude,
+            is_sea,
+        )
+        for name, (latitude, longitude, is_sea) in LOCATIONS.items()
+    ]
+
+    for download in as_completed(downloads):
+        name, location_data = download.result()
+        responses[name] = location_data
 
 
 land_names = [
