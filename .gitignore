@@ -1,29 +1,22 @@
-# Large raw and generated datasets
-data/raw/
-data/processed/*.csv
-
-# Markdown documentation
-*.md
-
-# Python
-__pycache__/
-*.py[cod]
 .venv/
 venv/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# macOS
+__pycache__/
+*.py[cod]
 .DS_Store
-
-# Editors and IDEs
+.env
+.env.*
+!.env.example
 .vscode/
 .idea/
-
-# Trainierte Modelle und erzeugte Vorhersagen
+.ipynb_checkpoints/
+archive/legacy_2026-10-20/data/
+archive/legacy_2026-10-20/models/
+archive/legacy_2026-10-20/reports/*
+!archive/legacy_2026-10-20/reports/*.md
+!archive/legacy_2026-10-20/reports/*.txt
+!archive/legacy_2026-10-20/reports/*.json
+data/raw/
+data/processed/
 models/
-reports/*_predictions_*.csv
-
-# Temporäre Editor-Dateien
+reports/runs/*/predictions.csv
 *.save
