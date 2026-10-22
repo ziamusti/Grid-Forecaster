@@ -1,0 +1,303 @@
+{
+  "smard_description": "Installierte Netto-Engpassleistung von Anlagen mit mind. 1 MW installierter Leistung [MW]. Es werden ausschließlich bereits in Betrieb genommene Anlagen berücksichtigt. Die Daten bis einschließlich 2024 beziehen sich auf den 1. Januar des jeweiligen Jahres. Angaben zur installierten Netto-Engpassleistung erneuerbarer Energieträger werden im August des jeweiligen Jahres aktualisiert. [Quelle: ENTSO-E] Seit 2025 greifen die Übertragungsnetzbetreiber bei ihrer jährlichen Meldung auf das Marktstammdatenregister zurück. Daher kommt es zu Abweichungen bei den Wertebereichen.",
+  "input_file": "data/processed/stage0_v2_sunshine/mastr_monthly_reconstructed.csv",
+  "input_sha256": "6e72ed6192ecba56fa584600620cf46ec941e13962f6a7a2726393c46ade26b5",
+  "rows": 36,
+  "arithmetic_rows": 30,
+  "caveats": [
+    "Not an independent validation: SMARD uses MaStR from 2025",
+    "SMARD description says minimum 1MW; cannot assume same population",
+    "MaStR strict-before Jan1 vs SMARD Jan1 may differ for Jan1 events",
+    "Snapshot reconstruction is not historical publication vintage",
+    "No automatic correction or acceptance threshold; no training"
+  ],
+  "sources": [
+    {
+      "url": "https://www.smard.de/app/chart_configuration/market_data_configuration.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/configuration.json",
+      "sha256": "569b5d32d4b065565e77588647104b4bb64041a69f03f77741fcebf8c365102c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:36.698037+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/assets/translations/lang-de.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/translations_de.json",
+      "sha256": "51ee45e2e6f6cd9bec8b77b79c61f37f6adb5ea6c7772389cefc59726c76fc39",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:38.789418+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/index_year.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_index.json",
+      "sha256": "f252c14a5137feed5323a9b2803eca98be72b5e336f3f22d18fb362a85db6342",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:39.084984+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1420066800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1420066800000.json",
+      "sha256": "6e5695bf94964dfc28facfd6968635d31cce68abf33d39db30673c2fd3140931",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:39.221144+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1451602800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1451602800000.json",
+      "sha256": "876cb8226ba16def8e11cbbc7d0f862b139f33ed6055b43bfb5c05568795e85c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:39.631706+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1483225200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1483225200000.json",
+      "sha256": "5bf031ec0986b761c3e36f97210b0f5f6973e40a925dfefa4d1cd55064642a5a",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:39.788018+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1514761200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1514761200000.json",
+      "sha256": "d6ede1357fb4700eb7464203a037a78ca37a688ef72eec5eb21fd10694273a05",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:39.950524+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1546297200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1546297200000.json",
+      "sha256": "3b8537f1a77ea6d81066a6dd3f546ce9173a69996fae8b77b63297c99841156b",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:40.316463+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1577833200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1577833200000.json",
+      "sha256": "00872e2acae2f53208869bb90dd195c0af37d1d768de4abc824234efaad612e0",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:40.669774+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1609455600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1609455600000.json",
+      "sha256": "1c42d40cf3e34ab73d668b21bb90e5df1c0e820a2cd9725ade97fadc553ad8e1",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:40.859769+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1640991600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1640991600000.json",
+      "sha256": "6461c93bcc02d86856ed48104769f9c48b92a4f17fcf2526d8eedbbe06bbca5c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:41.103446+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1672527600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1672527600000.json",
+      "sha256": "0a9c961636a3c3d8f36e450275eeaf2fc7a26f2c625b3e16305d455de983661c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:41.318215+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1704063600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1704063600000.json",
+      "sha256": "a6a1c944f85ed5dd4aac82bab1da1d49eb3b8e6a537540a5f9f34d4e5cfdedfd",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:41.640641+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1735686000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1735686000000.json",
+      "sha256": "390e7637bcce8a6f05ebdd7e2bf9b33b77161c9910c91d09e9204db56f89cbd8",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:41.796784+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/188/DE/188_DE_year_1767222000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/188_1767222000000.json",
+      "sha256": "b731dc7b5aa982a31cbd16a3010e63dab7f70376dfec1d127b92740793b9ebdf",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:42.190995+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/index_year.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_index.json",
+      "sha256": "f252c14a5137feed5323a9b2803eca98be72b5e336f3f22d18fb362a85db6342",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:42.401802+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1420066800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1420066800000.json",
+      "sha256": "c8eb8fe1b4e641c652827b72dc73e2d220dca30e87812722054744e6cb67d8a4",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:42.839787+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1451602800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1451602800000.json",
+      "sha256": "0b3b8e3e195f21e68d6f26d20d38a1bd8a87ec6f894eac9a811a91f9e36ab49f",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:43.072264+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1483225200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1483225200000.json",
+      "sha256": "57c6eae75ef56fc97bbb6b21d10d0434bc7233a5538e120be01de1f5ad9ab1c9",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:43.420872+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1514761200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1514761200000.json",
+      "sha256": "3d7c436341f6dd3b0607e5961915351d9a950663d9075a42b734ae5433ddeaf9",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:43.603481+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1546297200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1546297200000.json",
+      "sha256": "17fb2cc4d987709b1080fdc122fedefc233cbc47d760253b1db0d9cf070bd767",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:43.954920+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1577833200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1577833200000.json",
+      "sha256": "74895738f41acb3d0b758e976bb9a86ce892ca16b49a19b5189b49887572b7b7",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:44.125241+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1609455600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1609455600000.json",
+      "sha256": "ecb68fb808b48522c1eea7da5987f488772870353cf927d1630d5fb3be0e460c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:44.404660+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1640991600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1640991600000.json",
+      "sha256": "fdea9fdd992e24bec9508ba2d33ff46115755c1953dd170b20654afb372bac6b",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:44.550062+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1672527600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1672527600000.json",
+      "sha256": "be84d21ccbeba59593e283828853ab2a89fa4bf86766225cce814df872d5fda3",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:44.840570+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1704063600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1704063600000.json",
+      "sha256": "7ccebb37346e9eef34292bdbc8493bafea1a8e5631821721bfff45e842011d5c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:45.200176+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1735686000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1735686000000.json",
+      "sha256": "b275a575b55b8095d0b23369f344f718ae42633304e05912370478ddddfb0422",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:46.352854+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/186/DE/186_DE_year_1767222000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/186_1767222000000.json",
+      "sha256": "2704ca46288faf9606bd5f208ed4801b80ed14ebbe1cf2961a44a138ba325a22",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:46.682872+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/index_year.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_index.json",
+      "sha256": "f252c14a5137feed5323a9b2803eca98be72b5e336f3f22d18fb362a85db6342",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:47.028574+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1420066800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1420066800000.json",
+      "sha256": "9d01d7b8af97ed766343aac3f870f19f08ff6e7c97e82a74ad844595856241ca",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:47.775599+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1451602800000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1451602800000.json",
+      "sha256": "6615ff73bbaa3e0ba2e9f973baf17902d2db845ba8ccf1b806cf9819e16575f0",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:48.079354+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1483225200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1483225200000.json",
+      "sha256": "d42702fbe2304c06356f759315e20b78fd18376f23bc7d64ebcd2fd9cc37d784",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:48.298268+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1514761200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1514761200000.json",
+      "sha256": "2f220526bd9cbeb929ad80c5430041ce2854e603ba6eb54d085c42b2af4825a6",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:48.546411+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1546297200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1546297200000.json",
+      "sha256": "bc59c074b4a4acff524a94428cf9649c51bd0dab36bf9860cf763241407e0941",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:49.177946+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1577833200000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1577833200000.json",
+      "sha256": "b510a84dafe9701e13aeacffebbb979bce0f801b75a9c30a69fb7d96b8c9f561",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:49.753591+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1609455600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1609455600000.json",
+      "sha256": "98bd5394c02439a4da58274e1946ec32b92e00be45e87baf8b58712e060d0bb1",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:50.112506+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1640991600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1640991600000.json",
+      "sha256": "c9af32d213e5173a5aa102d5e113506f883a412439922aea632accbbc303cc5b",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:50.647916+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1672527600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1672527600000.json",
+      "sha256": "df022134c096b0113663d428db4dfd2c699dd1297a548794368aaf60ef60673c",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:50.833851+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1704063600000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1704063600000.json",
+      "sha256": "fe31c6508c90bd8be06463bc3b2ef41ffc93d08bcd506fd8e8a73e8052663247",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:51.975779+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1735686000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1735686000000.json",
+      "sha256": "a7ea57abd606b9aa8933b0566a977b8dda7d9472aaca38e4337d1fa795c10a92",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:52.398197+00:00"
+    },
+    {
+      "url": "https://www.smard.de/app/chart_data/4076/DE/4076_DE_year_1767222000000.json",
+      "file": "data/raw/smard_capacity_audit_2026-10-22/4076_1767222000000.json",
+      "sha256": "dd172eaf0c53a1b7dc2f8ab000b16baa351322e7649696fb155a06d89ee9a8c0",
+      "reused_cache": false,
+      "checked_at_utc": "2026-10-22T14:20:52.728710+00:00"
+    }
+  ]
+}
