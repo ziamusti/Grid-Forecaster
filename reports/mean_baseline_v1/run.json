@@ -1,0 +1,101 @@
+{
+  "method": "weekday_hour_training_mean",
+  "timezone": "Europe/Berlin",
+  "folds": [
+    {
+      "train_years": [
+        2015,
+        2016,
+        2017
+      ],
+      "validation_year": 2018
+    },
+    {
+      "train_years": [
+        2016,
+        2017,
+        2018
+      ],
+      "validation_year": 2019
+    },
+    {
+      "train_years": [
+        2017,
+        2018,
+        2019
+      ],
+      "validation_year": 2020
+    },
+    {
+      "train_years": [
+        2018,
+        2019,
+        2020
+      ],
+      "validation_year": 2021
+    },
+    {
+      "train_years": [
+        2019,
+        2020,
+        2021
+      ],
+      "validation_year": 2022
+    },
+    {
+      "train_years": [
+        2020,
+        2021,
+        2022
+      ],
+      "validation_year": 2023
+    },
+    {
+      "train_years": [
+        2021,
+        2022,
+        2023
+      ],
+      "validation_year": 2024
+    }
+  ],
+  "targets": {
+    "target_co2_gco2eq_kwh": "eligible_co2_nonestimated",
+    "target_renewable_share_pct": "eligible_renewable"
+  },
+  "source_sha256": {
+    "data/processed/stage0_v2_sunshine/hourly_2015.csv": "84bfbde4ac8ed228ea8283fd27333700b8d191248b3a9e99fbe49c8cea4b7e7d",
+    "data/processed/stage0_v2_sunshine/hourly_2016.csv": "5e36986d4cdcc42900b9f207b5ccd0713c70720958c34f3de7b31095a4332a17",
+    "data/processed/stage0_v2_sunshine/hourly_2017.csv": "843afd2aa2349155f0e2b0ad2565a246a4255eed4182a9200dbedbd23181160b",
+    "data/processed/stage0_v2_sunshine/hourly_2018.csv": "c7855f098dcb2834bd0e54bf3600b63747fee993b1664cdca4a05908e954f404",
+    "data/processed/stage0_v2_sunshine/hourly_2019.csv": "ca3ecbbc3a6ab84e00a389411f35061acb9a04d4cc7adbf872f02b4fe104a29c",
+    "data/processed/stage0_v2_sunshine/hourly_2020.csv": "01446107c15059c5822d95cd6a017745169221f6e07ba809e696a03f03a9f210",
+    "data/processed/stage0_v2_sunshine/hourly_2021.csv": "0d3594e7942c5ea20bb9972008a42cf280116c126cfe5355467a26841b3a6f3d",
+    "data/processed/stage0_v2_sunshine/hourly_2022.csv": "befa83e0f76ed27cd97b74d614f281e2effe6d6f874798ec185caea211c83544",
+    "data/processed/stage0_v2_sunshine/hourly_2023.csv": "f6f9b9fc8a02cb926357f4e33ce0291294fb0aee6c168067ff85cf0ca9fe23bd",
+    "data/processed/stage0_v2_sunshine/hourly_2024.csv": "a2672705520ef5e2dd5e95354a40aa3618b7e512d41e87f37d787773e9d9920e"
+  },
+  "script_sha256": "bf93b0c41023e8af6669860bfbd88bd43db14689d37087c177f467f679a6ac68",
+  "pooled_metrics": {
+    "target_co2_gco2eq_kwh": {
+      "n": 61188,
+      "mae": 117.00181763088587,
+      "rmse": 143.1852731678226,
+      "r2": 0.0209245571998129
+    },
+    "target_renewable_share_pct": {
+      "n": 61176,
+      "mae": 12.863316713001893,
+      "rmse": 15.792918110571588,
+      "r2": 0.15070390978087445
+    }
+  },
+  "evaluation_policy": "Prepared per-target eligibility masks used for fitting and scoring; all predictions retained",
+  "caveats": [
+    "Retrospective revised targets, not as-issued availability",
+    "Yearly fixed models, not origin-specific 72h operational backtest",
+    "2025 and 2026 tables neither read nor evaluated",
+    "Both repeated autumn hours share same local weekday/hour mean"
+  ],
+  "complete": true
+}
