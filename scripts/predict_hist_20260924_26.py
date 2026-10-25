@@ -1,4 +1,5 @@
 """Retrospective inference on 72 unseen UTC hours; no fitting or target access."""
+import argparse
 import csv
 import hashlib
 import json
@@ -27,21 +28,39 @@ def sha(p):
 
 
 def main():
-    if OUT.exists():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--target-start', default='2026-09-24', help='First prediction day, UTC (YYYY-MM-DD)')
+    parser.add_argument('--smard-dir', type=Path, default=SMARD)
+    args = parser.parse_args()
+    start = datetime.strptime(args.target_start, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+    last = start + timedelta(days=2)
+    times = pd.date_range(start, periods=72, freq='h')
+    smard_dir = args.smard_dir.resolve()
+    weather_dir = ROOT / f'data/raw/weather_prediction_{start:%Y%m%d}_{last:%Y%m%d}_era5'
+    out = ROOT / f'reports/hist_prediction_{start:%Y%m%d}_{last:%d}_v1'
+    if out.exists():
         raise FileExistsError('Prediction output already exists; no overwrite')
-    sources = [CAPACITY, SMARD/'generation.csv', SMARD/'load.csv', WEATHER_DIR/'manifest.json', MODEL/'run.json']
-    weather_manifest = json.loads((WEATHER_DIR/'manifest.json').read_text())
+    sources = [CAPACITY, smard_dir/'generation.csv', smard_dir/'load.csv', smard_dir/'manifest.json', weather_dir/'manifest.json', MODEL/'run.json']
+    smard_manifest = json.loads((smard_dir/'manifest.json').read_text())
+    assert pd.Timestamp(smard_manifest['start_utc']) == times[0] - pd.Timedelta(hours=168)
+    assert pd.Timestamp(smard_manifest['end_exclusive_utc']) == times[0] - pd.Timedelta(hours=96)
+    for item in smard_manifest['files']:
+        assert sha(smard_dir/item['file']) == item['sha256']
+    weather_manifest = json.loads((weather_dir/'manifest.json').read_text())
     assert weather_manifest['complete'] and len(weather_manifest['stations']) == 23
+    assert pd.Timestamp(weather_manifest['start_utc']) == times[0]
+    assert pd.Timestamp(weather_manifest['end_exclusive_utc']) == times[0] + pd.Timedelta(hours=72)
     weather = {}
     for station in weather_manifest['stations']:
-        p = WEATHER_DIR/(station+'.json')
+        p = weather_dir/(station+'.json')
         assert sha(p) == weather_manifest['stations'][station]['sha256']
         sources.append(p)
         d = json.loads(p.read_text())['hourly']
+        assert d['time'] == [t.strftime('%Y-%m-%dT%H:%M') for t in times]
         weather[station] = {t: {k: d[k][i] for k in d if k != 'time'} for i,t in enumerate(d['time'])}
     energy = {}
     for filename, mapping in [('generation.csv', TECH), ('load.csv', {'Netzlast':'grid_load'})]:
-        with (SMARD/filename).open(encoding='utf-8-sig', newline='') as f:
+        with (smard_dir/filename).open(encoding='utf-8-sig', newline='') as f:
             reader = csv.DictReader(f, delimiter=';')
             columns = {k: next(c for c in reader.fieldnames if c.startswith(k+' [MWh]')) for k in mapping}
             for row in reader:
@@ -56,7 +75,6 @@ def main():
                     dest[key] = val
     with CAPACITY.open() as f:
         capacity = {r['reference_date_exclusive']:r for r in csv.DictReader(f)}
-    times = pd.date_range('2026-09-24','2026-09-26T23:00',freq='h',tz='UTC')
     records = []
     for stamp in times:
         t = stamp.to_pydatetime(); local = t.astimezone(BERLIN); lag = t-timedelta(hours=168)
@@ -96,10 +114,11 @@ def main():
             pred = bundle['pipeline'].predict(x)
         assert pred.shape == (72,) and np.isfinite(pred).all()
         results['predicted_'+target.removeprefix('target_')] = pred
-    OUT.mkdir()
-    frame[['target_time_utc','target_time_berlin','energy_lag_time_utc','capacity_reference_date']+features].to_csv(OUT/'inputs.csv',index=False)
-    results.to_csv(OUT/'predictions.csv',index=False)
+    out.mkdir()
+    frame[['target_time_utc','target_time_berlin','energy_lag_time_utc','capacity_reference_date']+features].to_csv(out/'inputs.csv',index=False)
+    results.to_csv(out/'predictions.csv',index=False)
     report = dict(status='complete',created_utc=datetime.now(timezone.utc).isoformat(),hours=72,
+        target_start_utc=times[0].isoformat(),target_end_exclusive_utc=(times[-1]+pd.Timedelta(hours=1)).isoformat(),
         feature_count=len(features),training_end=run['training_end'],model_hashes=model_hashes,
         source_sha256={str(p.relative_to(ROOT)):sha(p) for p in sources},script_sha256=sha(Path(__file__)),
         retrospective_era5=True,targets_read=False,refit=False,clipping=False,
@@ -107,9 +126,9 @@ def main():
                      'Revised SMARD snapshot and reconstructed MaStR capacity proxy'],
         summary={c:dict(min=float(results[c].min()),max=float(results[c].max()),mean=float(results[c].mean())) for c in results.columns if c.startswith('predicted_')})
     for rel,digest in model_hashes.items(): assert sha(ROOT/rel)==digest
-    (OUT/'run.json').write_text(json.dumps(report,indent=2))
+    (out/'run.json').write_text(json.dumps(report,indent=2))
     print(json.dumps(report['summary'],indent=2))
-    print(OUT)
+    print(out)
 
 
 if __name__ == '__main__':

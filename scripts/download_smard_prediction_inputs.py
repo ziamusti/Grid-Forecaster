@@ -1,9 +1,10 @@
-"""Fresh SMARD raw download for the 168h lags of Sep 24–26, 2026 UTC."""
+"""Fresh SMARD raw download for a 72h prediction block's 168h lags."""
+import argparse
 import csv
 import hashlib
 import io
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
@@ -14,17 +15,23 @@ UTC = timezone.utc
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--target-start', default='2026-09-24', help='First prediction day, UTC (YYYY-MM-DD)')
+    args = parser.parse_args()
+    target_start = datetime.strptime(args.target_start, '%Y-%m-%d').replace(tzinfo=UTC)
     now = datetime.now(UTC)
     output = ROOT / 'data/raw/smard_prediction_inputs' / now.strftime('%Y%m%dT%H%M%SZ')
     output.mkdir(parents=True, exist_ok=False)
-    start = datetime(2026, 9, 17, tzinfo=UTC)
-    end = datetime(2026, 9, 20, tzinfo=UTC)
+    start = target_start - timedelta(hours=168)
+    end = start + timedelta(hours=72)
     datasets = {
         'generation': [1004066, 1001226, 1001225, 1004067, 1004068, 1001228,
                        1001224, 1001223, 1004069, 1004071, 1004070, 1001227],
         'load': [5000410, 5005140, 5004387, 5004359],
     }
     manifest = dict(retrieved_at_utc=now.isoformat(), endpoint=URL,
+                    target_start_utc=target_start.isoformat(),
+                    target_end_exclusive_utc=(target_start + timedelta(hours=72)).isoformat(),
                     start_utc=start.isoformat(), end_exclusive_utc=end.isoformat(),
                     note='Fresh revised snapshot, not historical publication state', files=[])
     for name, modules in datasets.items():

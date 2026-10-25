@@ -21,7 +21,7 @@ background:linear-gradient(120deg,#12372a,#1d6b4d);color:white;margin-bottom:1.2
 st.markdown('<div class="hero"><h1>🌱 Grid Forecaster</h1><p>Historische Analyse der CO₂-Intensität und des Grünanteils in Deutschland</p></div>',unsafe_allow_html=True)
 
 @st.cache_data(show_spinner=False,ttl=60)
-def data(source_version='historical-plus-september-72h-v1'):
+def data(source_version='historical-plus-september-through-29-v2'):
     return load_predictions(ROOT)
 
 try:
@@ -38,7 +38,7 @@ with right:
     duration=st.slider('Jobdauer in Stunden',1,6,3)
 
 if selected >= pd.Timestamp('2026-09-24').date():
-    st.caption('24.–26.09.2026: Vorhersagen des finalen HistGradientBoosting-Modells mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
+    st.caption('24.–29.09.2026: Vorhersagen des finalen HistGradientBoosting-Modells mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
 
 day=frame.loc[frame.time_utc.dt.date==selected].copy().reset_index(drop=True)
 if day.empty:

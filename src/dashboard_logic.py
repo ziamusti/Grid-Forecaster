@@ -26,8 +26,13 @@ def load_predictions(root: Path) -> pd.DataFrame:
             merged=frame if merged is None else merged.merge(frame,on='target_time_utc',validate='one_to_one')
         pieces.append(merged)
     result=pd.concat(pieces,ignore_index=True)
-    extra_path=root/'reports/hist_prediction_20260924_26_v1/predictions.csv'
-    if extra_path.exists():
+    extra_paths = [
+        root/'reports/hist_prediction_20260924_26_v1/predictions.csv',
+        root/'reports/hist_prediction_20260927_29_v1/predictions.csv',
+    ]
+    for extra_path in extra_paths:
+        if not extra_path.exists():
+            continue
         extra=pd.read_csv(extra_path,usecols=['target_time_utc',
             'predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
         extra=extra.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
