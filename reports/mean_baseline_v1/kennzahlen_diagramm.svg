@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+<title>Durchschnittsbaseline: Kennzahlen 2018–2024</title>
+<rect width="1200" height="620" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#243449}.title{font-size:29px;font-weight:bold}.head{font-size:20px;font-weight:bold}.small{font-size:15px}.value{font-size:19px;font-weight:bold}</style>
+<text x="40" y="48" class="title" text-anchor="start">Durchschnittsbaseline · Deutschland</text>
+<text x="40" y="79" class="small" text-anchor="start">Validierung 2018–2024 · jeweils 3 Trainingsjahre → 1 Folgejahr</text>
+<text x="40" y="143" class="head" text-anchor="start">CO₂-Intensität</text>
+<text x="40" y="170" class="small" text-anchor="start">Fehler in gCO₂eq/kWh</text>
+<line x1="88" y1="438.0" x2="368" y2="438.0" stroke="#dfe5ed"/>
+<text x="78" y="443.0" class="small" text-anchor="end">0</text>
+<line x1="88" y1="385.5" x2="368" y2="385.5" stroke="#dfe5ed"/>
+<text x="78" y="390.5" class="small" text-anchor="end">40</text>
+<line x1="88" y1="333.0" x2="368" y2="333.0" stroke="#dfe5ed"/>
+<text x="78" y="338.0" class="small" text-anchor="end">80</text>
+<line x1="88" y1="280.5" x2="368" y2="280.5" stroke="#dfe5ed"/>
+<text x="78" y="285.5" class="small" text-anchor="end">120</text>
+<line x1="88" y1="228.0" x2="368" y2="228.0" stroke="#dfe5ed"/>
+<text x="78" y="233.0" class="small" text-anchor="end">160</text>
+<rect x="120" y="284.4351143594623" width="66" height="153.5648856405377" fill="#2671b9"/>
+<text x="153" y="272.4351143594623" class="value" text-anchor="middle">117,00</text>
+<text x="153" y="465" class="small" text-anchor="middle">MAE</text>
+<rect x="258" y="250.06932896723282" width="66" height="187.93067103276718" fill="#2671b9"/>
+<text x="291" y="238.06932896723282" class="value" text-anchor="middle">143,19</text>
+<text x="291" y="465" class="small" text-anchor="middle">RMSE</text>
+<text x="88" y="502" class="small" text-anchor="start">Niedriger ist besser</text>
+<text x="435" y="143" class="head" text-anchor="start">Grünanteil</text>
+<text x="435" y="170" class="small" text-anchor="start">Fehler in Prozentpunkten</text>
+<line x1="483" y1="438.0" x2="763" y2="438.0" stroke="#dfe5ed"/>
+<text x="473" y="443.0" class="small" text-anchor="end">0</text>
+<line x1="483" y1="385.5" x2="763" y2="385.5" stroke="#dfe5ed"/>
+<text x="473" y="390.5" class="small" text-anchor="end">5</text>
+<line x1="483" y1="333.0" x2="763" y2="333.0" stroke="#dfe5ed"/>
+<text x="473" y="338.0" class="small" text-anchor="end">10</text>
+<line x1="483" y1="280.5" x2="763" y2="280.5" stroke="#dfe5ed"/>
+<text x="473" y="285.5" class="small" text-anchor="end">15</text>
+<line x1="483" y1="228.0" x2="763" y2="228.0" stroke="#dfe5ed"/>
+<text x="473" y="233.0" class="small" text-anchor="end">20</text>
+<rect x="515" y="302.9351745134801" width="66" height="135.06482548651988" fill="#16846a"/>
+<text x="548" y="290.9351745134801" class="value" text-anchor="middle">12,86</text>
+<text x="548" y="465" class="small" text-anchor="middle">MAE</text>
+<rect x="653" y="272.1743598389983" width="66" height="165.82564016100167" fill="#16846a"/>
+<text x="686" y="260.1743598389983" class="value" text-anchor="middle">15,79</text>
+<text x="686" y="465" class="small" text-anchor="middle">RMSE</text>
+<text x="483" y="502" class="small" text-anchor="start">Niedriger ist besser</text>
+<text x="830" y="143" class="head" text-anchor="start">Bestimmtheitsmaß R²</text>
+<text x="830" y="170" class="small" text-anchor="start">Dimensionslos · 1 = perfekte Vorhersage</text>
+<line x1="878" y1="438.0" x2="1158" y2="438.0" stroke="#dfe5ed"/>
+<text x="868" y="443.0" class="small" text-anchor="end">0</text>
+<line x1="878" y1="385.5" x2="1158" y2="385.5" stroke="#dfe5ed"/>
+<text x="868" y="390.5" class="small" text-anchor="end">0,25</text>
+<line x1="878" y1="333.0" x2="1158" y2="333.0" stroke="#dfe5ed"/>
+<text x="868" y="338.0" class="small" text-anchor="end">0,5</text>
+<line x1="878" y1="280.5" x2="1158" y2="280.5" stroke="#dfe5ed"/>
+<text x="868" y="285.5" class="small" text-anchor="end">0,75</text>
+<line x1="878" y1="228.0" x2="1158" y2="228.0" stroke="#dfe5ed"/>
+<text x="868" y="233.0" class="small" text-anchor="end">1</text>
+<rect x="910" y="433.6058429880393" width="66" height="4.394157011960709" fill="#7357a5"/>
+<text x="943" y="421.6058429880393" class="value" text-anchor="middle">0,021</text>
+<text x="943" y="465" class="small" text-anchor="middle">CO₂</text>
+<rect x="1048" y="406.35217894601635" width="66" height="31.647821053983634" fill="#7357a5"/>
+<text x="1081" y="394.35217894601635" class="value" text-anchor="middle">0,151</text>
+<text x="1081" y="465" class="small" text-anchor="middle">Grünanteil</text>
+<text x="878" y="502" class="small" text-anchor="start">Höher ist besser</text>
+<text x="40" y="555" class="small" text-anchor="start">Kennzahlen über alle gültigen Bewertungsstunden zusammen; kein Mittelwert der jährlichen R²-Werte.</text>
+<text x="40" y="581" class="small" text-anchor="start">CO₂: 61.188 Stunden · Grünanteil: 61.176 Stunden · 2025/2026 nicht bewertet.</text>
+</svg>

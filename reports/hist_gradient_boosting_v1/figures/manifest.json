@@ -1,0 +1,12 @@
+{
+  "source_sha256": {
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/hist_gradient_boosting_v1/metrics_common.csv": "571a17de3e4f7bb27d46792a0ea084f12d3019a741b2671c5ba0635265bf3f18",
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/hist_gradient_boosting_v1/run.json": "4fead95fa8eb76a14b8a6cc9475762a3891e3d2e1305f8b58751c34ddc290dc5"
+  },
+  "pandas": "2.3.3",
+  "matplotlib": "3.9.4",
+  "displayed_methods": [
+    "hist_gradient_boosting"
+  ],
+  "training_performed": false
+}

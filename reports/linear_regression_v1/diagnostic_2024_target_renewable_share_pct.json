@@ -1,0 +1,25 @@
+{
+  "train_n": 26280,
+  "eligible_n": 8784,
+  "train_rank": 173,
+  "transformed_features": 173,
+  "intercept": 47.63596029622009,
+  "below_zero": 0,
+  "above_upper": 34,
+  "minimum": 16.215816060831088,
+  "maximum": 121.20179293483469,
+  "mean_original_mask": {
+    "validation_year": 2024,
+    "target": "target_renewable_share_pct",
+    "method": "mean",
+    "n": 8784,
+    "mae": 15.754646102737155,
+    "rmse": 18.629115105919773,
+    "r2": -0.07588738896365221
+  },
+  "train_years": [
+    2021,
+    2022,
+    2023
+  ]
+}

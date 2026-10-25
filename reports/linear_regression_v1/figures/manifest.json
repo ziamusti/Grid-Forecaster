@@ -1,0 +1,12 @@
+{
+  "source_sha256": {
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/linear_regression_v1/metrics_common.csv": "4f2c1b337f69213702e76182acb0e76d5c1fe2091e69568cfedcdcbe2fc2c766",
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/linear_regression_v1/run.json": "8c58d413335348c38c83682c3b20cb35df68b555b05e2734f4c5216e802017f0"
+  },
+  "pandas": "2.3.3",
+  "matplotlib": "3.9.4",
+  "displayed_methods": [
+    "linear"
+  ],
+  "training_performed": false
+}

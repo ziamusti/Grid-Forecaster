@@ -1,4 +1,9 @@
 .venv/
+.venv-stage0/
+reports/hist_gradient_boosting_v1/*.joblib
+reports/hist_gradient_boosting_v1/predictions_*.csv
+reports/linear_regression_v1/*.joblib
+reports/linear_regression_v1/predictions_*.csv
 venv/
 __pycache__/
 *.py[cod]
@@ -20,3 +25,4 @@ data/processed/
 models/
 reports/runs/*/predictions.csv
 *.save
+*.md

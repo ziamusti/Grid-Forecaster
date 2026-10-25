@@ -1,0 +1,90 @@
+{
+  "passed": true,
+  "models": [
+    {
+      "year": 2018,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 3.410605131648481e-13,
+      "n": 8604
+    },
+    {
+      "year": 2018,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 2.842170943040401e-14,
+      "n": 8568
+    },
+    {
+      "year": 2019,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 2.8421709430404007e-13,
+      "n": 8760
+    },
+    {
+      "year": 2019,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 2.842170943040401e-14,
+      "n": 8760
+    },
+    {
+      "year": 2020,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 5.115907697472721e-13,
+      "n": 8784
+    },
+    {
+      "year": 2020,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 4.263256414560601e-14,
+      "n": 8784
+    },
+    {
+      "year": 2021,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 4.547473508864641e-13,
+      "n": 8760
+    },
+    {
+      "year": 2021,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 3.552713678800501e-14,
+      "n": 8760
+    },
+    {
+      "year": 2022,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 3.410605131648481e-13,
+      "n": 8760
+    },
+    {
+      "year": 2022,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 5.684341886080802e-14,
+      "n": 8760
+    },
+    {
+      "year": 2023,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 5.684341886080801e-13,
+      "n": 8736
+    },
+    {
+      "year": 2023,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 6.394884621840902e-14,
+      "n": 8760
+    },
+    {
+      "year": 2024,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 7.389644451905042e-13,
+      "n": 8784
+    },
+    {
+      "year": 2024,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 4.263256414560601e-14,
+      "n": 8784
+    }
+  ],
+  "note": "matmul warnings observed during original run; finite results independently reproduced by unoptimized einsum"
+}

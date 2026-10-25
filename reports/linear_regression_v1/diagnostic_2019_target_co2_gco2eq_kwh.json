@@ -1,0 +1,25 @@
+{
+  "train_n": 25990,
+  "eligible_n": 8760,
+  "train_rank": 173,
+  "transformed_features": 173,
+  "intercept": 524.7861874120117,
+  "below_zero": 0,
+  "above_upper": 0,
+  "minimum": 94.78505103211063,
+  "maximum": 857.6576627568962,
+  "mean_original_mask": {
+    "validation_year": 2019,
+    "target": "target_co2_gco2eq_kwh",
+    "method": "mean",
+    "n": 8760,
+    "mae": 123.48941281936389,
+    "rmse": 154.53548142671926,
+    "r2": -0.5397583233304175
+  },
+  "train_years": [
+    2016,
+    2017,
+    2018
+  ]
+}
