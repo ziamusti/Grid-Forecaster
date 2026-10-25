@@ -40,7 +40,8 @@ def finite(s):
     return s != '' and np.isfinite(float(s))
 
 
-def main():
+def main(test_2025=False):
+    OUT = ROOT / 'reports' / ('linear_regression_test2025_v1' if test_2025 else 'linear_regression_v1')
     if OUT.exists():
         raise FileExistsError('Use a new version, never overwrite an experiment')
     schema = json.loads((DATA / 'feature_schema.json').read_text())
@@ -50,9 +51,11 @@ def main():
     assert [f['validation_year'] for f in folds] == list(range(2018, 2025))
     for f in folds:
         assert f['train_years'] == list(range(f['validation_year']-3, f['validation_year']))
+    if test_2025:
+        folds = [dict(train_years=[2022, 2023, 2024], validation_year=2025)]
     files = [DATA/'feature_schema.json', DATA/'splits.json']
     data = {}
-    for year in range(2015, 2025):
+    for year in (range(2022, 2026) if test_2025 else range(2015, 2025)):
         path = DATA/f'hourly_{year}.csv'
         files.append(path)
         with path.open() as stream:
@@ -143,11 +146,15 @@ def main():
                   policy='OLS unregularized; fixed calendar categories; train-only scaling; no clipping',
                   scoring='Per-target eligible mask AND finite nonestimated weekly target; weekly lag in UTC',
                   caveats=['Retrospective ERA5 and revised targets, not operational 72h backtest',
-                           'PV net retained; historical MaStR proxy', '2025/2026 never read',
+                           'PV net retained; historical MaStR proxy',
+                           '2025 retrospective held-out test; 2026 never read' if test_2025 else '2025/2026 never read',
                            'No tuning; rank deficiency/collinearity can affect coefficients'],complete=True)
     (OUT/'run.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result['pooled'],indent=2))
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test-2025', action='store_true')
+    main(test_2025=parser.parse_args().test_2025)

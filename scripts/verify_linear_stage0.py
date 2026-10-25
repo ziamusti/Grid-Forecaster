@@ -11,11 +11,12 @@ OUT=ROOT/'reports/linear_regression_v1'
 DATA=ROOT/'data/processed/stage0_v2_sunshine'
 
 
-def main():
+def main(test_2025=False):
+    OUT=ROOT/('reports/linear_regression_test2025_v1' if test_2025 else 'reports/linear_regression_v1')
     run=json.loads((OUT/'run.json').read_text())
     summary=list(csv.DictReader((OUT/'metrics_common.csv').open()))
     results=[]
-    for year in range(2018,2025):
+    for year in ([2025] if test_2025 else range(2018,2025)):
         with (DATA/f'hourly_{year}.csv').open() as f:
             source={r['target_time_utc']:r for r in csv.DictReader(f)}
         for target in ('target_co2_gco2eq_kwh','target_renewable_share_pct'):
@@ -29,10 +30,14 @@ def main():
             delta=float(np.max(np.abs(alternative-saved)))
             assert np.isfinite(alternative).all() and delta<1e-7
             # Original mean-baseline scores must reproduce the prior experiment.
-            prior=list(csv.DictReader((ROOT/f'reports/mean_baseline_v1/predictions_{year}.csv').open()))
-            means={r['target_time_utc']:float(r['prediction']) for r in prior if r['target']==target and r['scored']=='1'}
-            assert set(means)=={r['target_time_utc'] for r in rows}
-            assert all(abs(means[r['target_time_utc']]-float(r['mean']))<1e-8 for r in rows)
+            if not test_2025:
+                prior=list(csv.DictReader((ROOT/f'reports/mean_baseline_v1/predictions_{year}.csv').open()))
+                means={r['target_time_utc']:float(r['prediction']) for r in prior if r['target']==target and r['scored']=='1'}
+                assert set(means)=={r['target_time_utc'] for r in rows}
+                assert all(abs(means[r['target_time_utc']]-float(r['mean']))<1e-8 for r in rows)
+            else:
+                assert bundle['fold']==dict(train_years=[2022,2023,2024],validation_year=2025)
+                assert len(bundle['features'])==136 and transformed.shape[1]==173
             common=[r for r in rows if r['common_scored']=='1']
             y=np.array([float(r['actual']) for r in common])
             for method in ('linear','mean','week'):
@@ -46,9 +51,12 @@ def main():
         assert hashlib.sha256((ROOT/filename).read_bytes()).hexdigest()==expected
     (OUT/'verification.json').write_text(json.dumps(dict(passed=True,models=results,
         note='matmul warnings observed during original run; finite results independently reproduced by unoptimized einsum'),indent=2)+'\n')
-    print('Verified 14 models, 42 metric rows, previous mean predictions and source hashes.')
+    print(f'Verified {len(results)} models, {len(summary)} metric rows and source hashes.')
     print('Maximum independent prediction difference:',max(r['max_prediction_difference'] for r in results))
 
 
 if __name__=='__main__':
-    main()
+    import argparse
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--test-2025',action='store_true')
+    main(test_2025=parser.parse_args().test_2025)

@@ -1,0 +1,14 @@
+{
+  "source_sha256": {
+    "reports/linear_regression_test2025_v1/metrics_common.csv": "48a9515a29e69d37c734710950fa1f38ff065f2565db793e8390ab48994e88db",
+    "reports/linear_regression_test2025_v1/predictions_2025_target_co2_gco2eq_kwh.csv": "5e4e5f7b84118d9914574d5c9933b1227d3347791854035ed8bd89615e4eda84",
+    "reports/linear_regression_test2025_v1/predictions_2025_target_renewable_share_pct.csv": "2930757c128b58b6c71f805c351ca7cc0cfa46157f696f3492e19838862197fe"
+  },
+  "script_sha256": "8be59878bb7aa71c2d8901214faa6d0b9ac91ccdfa6336770353d4efdedef366",
+  "week_start": "2025-01-06 00:00:00+01:00",
+  "week_end_exclusive": "2025-01-13 00:00:00+01:00",
+  "selection": "First complete Monday-Sunday week; fixed before inspecting errors",
+  "matplotlib": "3.9.4",
+  "pandas": "2.3.3",
+  "training_performed": false
+}

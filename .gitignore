@@ -1,5 +1,7 @@
 .venv/
 .venv-stage0/
+reports/linear_regression_test2025_v1/*.joblib
+reports/linear_regression_test2025_v1/predictions_*.csv
 reports/xgboost_v1/*.joblib
 reports/xgboost_v1/predictions_*.csv
 reports/hist_gradient_boosting_v1/*.joblib
