@@ -1,0 +1,3 @@
+﻿Modell;Zielgröße;Testzeitraum;Stunden;MAE;RMSE;R²;Einheit MAE/RMSE;Trainingszeitraum
+Lineare Regression;CO₂-Intensität;Ganzes Jahr 2025;8760;51,75096350657278;65,1528189594025;0,8412456727492383;gCO₂eq/kWh;2022–2024
+Lineare Regression;Grünanteil;Ganzes Jahr 2025;8760;6,403180782899471;8,01963034583479;0,8341000838151486;Prozentpunkte;2022–2024

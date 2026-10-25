@@ -1,0 +1,7 @@
+{
+  "source": "reports/linear_regression_test2025_v1/metrics_common.csv",
+  "source_sha256": "48a9515a29e69d37c734710950fa1f38ff065f2565db793e8390ab48994e88db",
+  "training_performed": false,
+  "rows": 2,
+  "hours_per_target": 8760
+}
