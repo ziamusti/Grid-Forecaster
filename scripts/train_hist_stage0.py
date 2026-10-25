@@ -27,7 +27,19 @@ def estimator():
     return HistGradientBoostingRegressor(**PARAMS)
 
 
-def main():
+def main(xgb=False):
+    OUT=ROOT/'reports'/('xgboost_v1' if xgb else 'hist_gradient_boosting_v1')
+    method_name='xgboost' if xgb else 'hist_gradient_boosting'
+    methods=[method_name,'linear','mean','week']
+    params=PARAMS
+    make_estimator=estimator
+    if xgb:
+        from xgboost import XGBRegressor
+        params=dict(objective='reg:squarederror',n_estimators=100,learning_rate=.1,
+                    max_depth=6,min_child_weight=1,subsample=1.,colsample_bytree=1.,
+                    reg_alpha=0.,reg_lambda=1.,tree_method='hist',max_bin=255,
+                    random_state=42,n_jobs=1,early_stopping_rounds=None)
+        make_estimator=lambda: XGBRegressor(**params)
     if OUT.exists():
         raise FileExistsError('Never overwrite a completed or partial experiment')
     reference=json.loads((REFERENCE/'run.json').read_text())
@@ -45,7 +57,7 @@ def main():
     OUT.mkdir(parents=True)
     results=[]
     diagnostics=[]
-    pooled={(t,m):([],[]) for t in TARGETS for m in ('hist_gradient_boosting','linear','mean','week')}
+    pooled={(t,m):([],[]) for t in TARGETS for m in methods}
     start=time.monotonic()
     for fold in folds:
         year=fold['validation_year']
@@ -72,14 +84,17 @@ def main():
             assert baseline.target_time_utc.tolist()==val.target_time_utc.tolist()
             np.testing.assert_allclose(baseline.actual.to_numpy(),val[target].to_numpy(),rtol=1e-12,atol=1e-9)
             with threadpool_limits(limits=1):
-                learner=estimator().fit(transformer.transform(x),y)
+                learner=make_estimator().fit(transformer.transform(x),y)
                 model=Pipeline([('preprocess',transformer),('regression',learner)])
                 prediction=model.predict(xv)
-            assert learner.n_iter_==100 and not learner.do_early_stopping_
+            if xgb:
+                assert learner.get_booster().num_boosted_rounds()==100
+            else:
+                assert learner.n_iter_==100 and not learner.do_early_stopping_
             assert np.isfinite(prediction).all()
-            baseline['hist_gradient_boosting']=prediction
+            baseline[method_name]=prediction
             common=baseline.loc[baseline.common_scored==1]
-            for method in ('hist_gradient_boosting','linear','mean','week'):
+            for method in methods:
                 actual=common.actual.tolist()
                 predicted=common[method].tolist()
                 stats=metrics(actual,predicted)
@@ -95,26 +110,33 @@ def main():
                 missing_week=len(val)-len(common),below_zero=int((prediction<0).sum()),
                 above_100=int((prediction>100).sum()) if target.endswith('pct') else None,
                 minimum=float(prediction.min()),maximum=float(prediction.max())))
-            print(year,target,'MAE HGB/linear:',results[-4]['mae'],results[-3]['mae'],flush=True)
+            print(year,target,method_name,'MAE model/linear:',results[-4]['mae'],results[-3]['mae'],flush=True)
     pd.DataFrame(results).to_csv(OUT/'metrics_common.csv',index=False)
     summary=[dict(target=t,method=m,**metrics(a,p)) for (t,m),(a,p) in pooled.items()]
     pd.DataFrame(summary).to_csv(OUT/'metrics_pooled.csv',index=False)
     # Compare all unchanged reference scores, not only the pooled summary.
     previous=pd.read_csv(REFERENCE/'metrics_common.csv')
     for row in results:
-        if row['method']=='hist_gradient_boosting': continue
+        if row['method']==method_name: continue
         old=previous.loc[(previous.validation_year==row['validation_year'])&(previous.target==row['target'])&(previous.method==row['method'])].iloc[0]
         for field in ('n','mae','rmse','r2'):
             assert abs(old[field]-row[field])<1e-8
     for p,h in hashes.items(): assert sha(ROOT/p)==h
-    manifest=dict(params=PARAMS,folds=folds,features=features,transformed_features=reference['transformed_features'],
+    manifest=dict(params=params,folds=folds,features=features,transformed_features=reference['transformed_features'],
         source_sha256=hashes,script_sha256=sha(Path(__file__)),pooled=summary,diagnostics=diagnostics,
         versions=dict(python=platform.python_version(),sklearn=sklearn.__version__,numpy=np.__version__,pandas=pd.__version__),
         duration_seconds=time.monotonic()-start,complete=True,
         policy='Fixed parameters before evaluation; exact OLS train-fitted preprocessing reused; no tuning or clipping',
         caveats=['Retrospective ERA5/revised targets/MaStR net proxy; not operational 72h test','2025/2026 not read'])
+    if xgb:
+        import xgboost
+        manifest['versions']['xgboost']=xgboost.__version__
     (OUT/'run.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(summary,indent=2))
 
 
-if __name__=='__main__': main()
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--xgboost',action='store_true')
+    main(xgb=parser.parse_args().xgboost)

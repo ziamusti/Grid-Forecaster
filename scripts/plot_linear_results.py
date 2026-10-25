@@ -16,14 +16,14 @@ REPORT = ROOT / 'reports/linear_regression_v1'
 OUT = REPORT / 'figures'
 
 
-def main(hist=False):
-    REPORT = ROOT / 'reports' / ('hist_gradient_boosting_v1' if hist else 'linear_regression_v1')
+def main(hist=False, xgb=False):
+    REPORT = ROOT / 'reports' / ('xgboost_v1' if xgb else 'hist_gradient_boosting_v1' if hist else 'linear_regression_v1')
     OUT = REPORT / 'figures'
     paths = [REPORT/'metrics_common.csv', REPORT/'run.json']
     hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     yearly = pd.read_csv(paths[0])
     pooled = pd.DataFrame(json.loads(paths[1].read_text())['pooled'])
-    assert len(yearly) == (56 if hist else 42) and len(pooled) == (8 if hist else 6)
+    assert len(yearly) == (56 if hist or xgb else 42) and len(pooled) == (8 if hist or xgb else 6)
     OUT.mkdir(exist_ok=True)
     methods = ['linear']
     labels = ['Lineare Regression']
@@ -32,6 +32,10 @@ def main(hist=False):
         methods = ['hist_gradient_boosting']
         labels = ['HistGradientBoosting']
         colors = ['#16846a']
+    if xgb:
+        methods = ['xgboost']
+        labels = ['XGBoost']
+        colors = ['#8c56b5']
     for target, name, unit, filename in [
         ('target_co2_gco2eq_kwh', 'CO₂-Intensität', 'gCO₂eq/kWh', 'co2_ergebnisse'),
         ('target_renewable_share_pct', 'Grünanteil', 'Prozentpunkte', 'gruenanteil_ergebnisse')]:
@@ -39,9 +43,9 @@ def main(hist=False):
         annual = yearly.loc[yearly.target == target]
         assert annual.groupby('validation_year')['n'].nunique().eq(1).all()
         pooled.loc[pooled.target == target].set_index('method').to_csv(OUT/f'{filename}_gesamt.csv')
-        annual.loc[annual.method == ('hist_gradient_boosting' if hist else 'linear')].to_csv(OUT/f'{filename}_jaehrlich.csv', index=False)
+        annual.loc[annual.method.isin(methods)].to_csv(OUT/f'{filename}_jaehrlich.csv', index=False)
         fig, axes = plt.subplots(2, 3, figsize=(16 if hist else 14, 9 if hist else 8))
-        title = 'HistGradientBoosting' if hist else 'Lineare Regression'
+        title = labels[0]
         fig.suptitle(f'{name} · {title}', fontsize=18, fontweight='bold')
         for col, (metric, title) in enumerate([('mae','MAE'),('rmse','RMSE'),('r2','R²')]):
             ax=axes[0,col]
@@ -87,4 +91,6 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--hist', action='store_true', help='Render HistGradientBoosting comparison')
-    main(hist=parser.parse_args().hist)
+    parser.add_argument('--xgboost', action='store_true')
+    args = parser.parse_args()
+    main(hist=args.hist, xgb=args.xgboost)

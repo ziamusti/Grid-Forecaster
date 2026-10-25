@@ -1,0 +1,12 @@
+{
+  "source_sha256": {
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/xgboost_v1/metrics_common.csv": "c3be99c568a6b957872bcaf0a526a0ad7aaf51563ce8483e83f5d5e8964af442",
+    "/Users/ziaul-mustafa/Documents/Grid-Forecaster/reports/xgboost_v1/run.json": "1128f8d0c9a93e9cd98c7838e2bd55f5279d06d66da17893cb13e7cb68002e68"
+  },
+  "pandas": "2.3.3",
+  "matplotlib": "3.9.4",
+  "displayed_methods": [
+    "xgboost"
+  ],
+  "training_performed": false
+}
