@@ -1,5 +1,8 @@
 .venv/
 .venv-stage0/
+reports/final_xgboost_2015_2026_v1/*.joblib
+reports/final_hist_gradient_boosting_2015_2026_v1/*.joblib
+reports/final_linear_2015_2026_v1/*.joblib
 reports/xgboost_test2026_v1/*.joblib
 reports/xgboost_test2026_v1/predictions_*.csv
 reports/hist_gradient_boosting_test2026_v1/*.joblib
