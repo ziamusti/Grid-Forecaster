@@ -27,10 +27,12 @@ def estimator():
     return HistGradientBoostingRegressor(**PARAMS)
 
 
-def main(xgb=False, test_2025=False):
+def main(xgb=False, test_2025=False, test_2026=False):
+    assert not (test_2025 and test_2026)
+    test_year=2026 if test_2026 else 2025 if test_2025 else None
     experiment = 'xgboost' if xgb else 'hist_gradient_boosting'
-    OUT=ROOT/'reports'/(experiment+('_test2025_v1' if test_2025 else '_v1'))
-    REFERENCE=ROOT/'reports'/('linear_regression_test2025_v1' if test_2025 else 'linear_regression_v1')
+    OUT=ROOT/'reports'/(experiment+(f'_test{test_year}_v1' if test_year else '_v1'))
+    REFERENCE=ROOT/'reports'/(f'linear_regression_test{test_year}_v1' if test_year else 'linear_regression_v1')
     method_name='xgboost' if xgb else 'hist_gradient_boosting'
     methods=[method_name,'linear','mean','week']
     params=PARAMS
@@ -46,8 +48,8 @@ def main(xgb=False, test_2025=False):
         raise FileExistsError('Never overwrite a completed or partial experiment')
     reference=json.loads((REFERENCE/'run.json').read_text())
     folds=reference['folds']
-    assert [f['validation_year'] for f in folds]==([2025] if test_2025 else list(range(2018,2025)))
-    if test_2025:
+    assert [f['validation_year'] for f in folds]==([test_year] if test_year else list(range(2018,2025)))
+    if test_year:
         previous_run=json.loads((ROOT/'reports'/f'{experiment}_v1/run.json').read_text())
         assert params==previous_run['params']
         assert reference['features']==previous_run['features']
@@ -55,12 +57,12 @@ def main(xgb=False, test_2025=False):
     for f in folds:
         assert f['train_years']==list(range(f['validation_year']-3,f['validation_year']))
     hashes=dict(reference['source_sha256'])
-    assert not any('2026.csv' in p or (not test_2025 and '2025.csv' in p) for p in hashes)
+    assert not any((not test_2026 and '2026.csv' in p) or (not test_year and '2025.csv' in p) for p in hashes)
     for p,h in hashes.items():
         assert sha(ROOT/p)==h
     features=reference['features']
     cols=list(dict.fromkeys(['target_time_utc',*features,*TARGETS,*TARGETS.values()]))
-    data={y:pd.read_csv(DATA/f'hourly_{y}.csv',usecols=cols) for y in (range(2022,2026) if test_2025 else range(2015,2025))}
+    data={y:pd.read_csv(DATA/f'hourly_{y}.csv',usecols=cols) for y in (range(test_year-3,test_year+1) if test_year else range(2015,2025))}
     OUT.mkdir(parents=True)
     results=[]
     diagnostics=[]
@@ -135,7 +137,7 @@ def main(xgb=False, test_2025=False):
         duration_seconds=time.monotonic()-start,complete=True,
         policy='Fixed parameters before evaluation; exact OLS train-fitted preprocessing reused; no tuning or clipping',
         caveats=['Retrospective ERA5/revised targets/MaStR net proxy; not operational 72h test',
-                 '2025 held-out retrospective test; 2026 not read' if test_2025 else '2025/2026 not read'])
+                 '2026 partial-year retrospective test' if test_2026 else '2025 held-out retrospective test; 2026 not read' if test_2025 else '2025/2026 not read'])
     if xgb:
         import xgboost
         manifest['versions']['xgboost']=xgboost.__version__
@@ -148,5 +150,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--xgboost',action='store_true')
     parser.add_argument('--test-2025',action='store_true')
+    parser.add_argument('--test-2026',action='store_true')
     args=parser.parse_args()
-    main(xgb=args.xgboost,test_2025=args.test_2025)
+    main(xgb=args.xgboost,test_2025=args.test_2025,test_2026=args.test_2026)

@@ -40,8 +40,10 @@ def finite(s):
     return s != '' and np.isfinite(float(s))
 
 
-def main(test_2025=False):
-    OUT = ROOT / 'reports' / ('linear_regression_test2025_v1' if test_2025 else 'linear_regression_v1')
+def main(test_2025=False, test_2026=False):
+    assert not (test_2025 and test_2026)
+    test_year = 2026 if test_2026 else 2025 if test_2025 else None
+    OUT = ROOT / 'reports' / (f'linear_regression_test{test_year}_v1' if test_year else 'linear_regression_v1')
     if OUT.exists():
         raise FileExistsError('Use a new version, never overwrite an experiment')
     schema = json.loads((DATA / 'feature_schema.json').read_text())
@@ -51,17 +53,23 @@ def main(test_2025=False):
     assert [f['validation_year'] for f in folds] == list(range(2018, 2025))
     for f in folds:
         assert f['train_years'] == list(range(f['validation_year']-3, f['validation_year']))
-    if test_2025:
-        folds = [dict(train_years=[2022, 2023, 2024], validation_year=2025)]
+    if test_year:
+        folds = [dict(train_years=list(range(test_year-3,test_year)), validation_year=test_year)]
+        previous=json.loads((ROOT/'reports/linear_regression_v1/run.json').read_text())
+        assert features==previous['features']
     files = [DATA/'feature_schema.json', DATA/'splits.json']
     data = {}
-    for year in (range(2022, 2026) if test_2025 else range(2015, 2025)):
+    for year in (range(test_year-3, test_year+1) if test_year else range(2015, 2025)):
         path = DATA/f'hourly_{year}.csv'
         files.append(path)
         with path.open() as stream:
             data[year] = list(csv.DictReader(stream))
         start = datetime.fromisoformat(f'{year}-01-01T00:00:00+00:00')
-        assert len(data[year]) == (start.replace(year=year+1)-start).total_seconds()/3600
+        full_year_hours = (start.replace(year=year+1)-start).total_seconds()/3600
+        if test_2026 and year==2026:
+            assert 0 < len(data[year]) <= full_year_hours
+        else:
+            assert len(data[year]) == full_year_hours
         for i, row in enumerate(data[year]):
             t = datetime.fromisoformat(row['target_time_utc'].replace('Z', '+00:00'))
             assert t == start+timedelta(hours=i)
@@ -147,7 +155,7 @@ def main(test_2025=False):
                   scoring='Per-target eligible mask AND finite nonestimated weekly target; weekly lag in UTC',
                   caveats=['Retrospective ERA5 and revised targets, not operational 72h backtest',
                            'PV net retained; historical MaStR proxy',
-                           '2025 retrospective held-out test; 2026 never read' if test_2025 else '2025/2026 never read',
+                           '2026 partial-year retrospective test' if test_2026 else '2025 retrospective held-out test; 2026 never read' if test_2025 else '2025/2026 never read',
                            'No tuning; rank deficiency/collinearity can affect coefficients'],complete=True)
     (OUT/'run.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result['pooled'],indent=2))
@@ -157,4 +165,6 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--test-2025', action='store_true')
-    main(test_2025=parser.parse_args().test_2025)
+    parser.add_argument('--test-2026', action='store_true')
+    args=parser.parse_args()
+    main(test_2025=args.test_2025,test_2026=args.test_2026)

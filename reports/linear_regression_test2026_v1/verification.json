@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "models": [
+    {
+      "year": 2026,
+      "target": "target_co2_gco2eq_kwh",
+      "max_prediction_difference": 3.694822225952521e-13,
+      "n": 6384
+    },
+    {
+      "year": 2026,
+      "target": "target_renewable_share_pct",
+      "max_prediction_difference": 4.263256414560601e-14,
+      "n": 6384
+    }
+  ],
+  "note": "matmul warnings observed during original run; finite results independently reproduced by unoptimized einsum"
+}
