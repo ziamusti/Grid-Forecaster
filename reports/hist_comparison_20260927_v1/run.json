@@ -1,0 +1,34 @@
+{
+  "hours": 24,
+  "start_utc": "2026-09-27T00:00:00+00:00",
+  "end_exclusive_utc": "2026-09-28T00:00:00+00:00",
+  "error_definition": "prediction minus provider actual",
+  "metrics": {
+    "co2_gco2eq_kwh": {
+      "mae": 24.60531435407866,
+      "rmse": 29.90301682597443,
+      "bias": -20.309126118957213,
+      "predicted_mean": 296.60754054770945,
+      "actual_mean": 316.9166666666667
+    },
+    "renewable_share_pct": {
+      "mae": 2.855563007911068,
+      "rmse": 3.256546410270138,
+      "bias": 1.764798637062764,
+      "predicted_mean": 70.11145596040062,
+      "actual_mean": 68.34665732333787
+    }
+  },
+  "nuclear_zero_hours": 24,
+  "estimated_co2_hours": 0,
+  "retrospective_era5": true,
+  "refit": false,
+  "sources": {
+    "reports/hist_prediction_20260927_29_v1/predictions.csv": "f7bd8db1d9bc0b737629997b3f199742669acc1864751dc994e213a521c7c418",
+    "data/raw/electricitymaps/full_DE_20261020T2100Z/20260919T23.json": "6270e526c810ab904c0a67fc259602216c932ebe041e7fff49147aba09250266",
+    "data/raw/electricitymaps/full_DE_20261020T2100Z/manifest.json": "41d319804c131478960090b7d88a13e8c4c6b8a340d7e7c4a807ff0bf31071c5",
+    "data/raw/smard_comparison_20260927/20261025T220419Z/generation.csv": "6fb44edbab06a716385b2880bdb4a392a561deab4dddce62596d067c137a692e",
+    "data/raw/smard_comparison_20260927/20261025T220419Z/manifest.json": "9cb16fa3db49b8331d8eafe0e1b9c8dd38d556c34e70e4ba9f275d71f7bf1a2b"
+  },
+  "script_sha256": "a8233eef1b5da8cd7668a2b80c62131162f7db3cd183492c3921a628e4023100"
+}
