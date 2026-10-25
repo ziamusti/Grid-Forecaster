@@ -4,19 +4,21 @@ import numpy as np
 from plot_linear_results import ROOT, plt, pd
 
 
-def main():
+def main(test_2025=False):
     methods = {'linear': 'linear_regression_v1',
                'hist_gradient_boosting': 'hist_gradient_boosting_v1',
                'xgboost': 'xgboost_v1'}
     labels = ['Lineare Regression', 'HistGradientBoosting', 'XGBoost']
-    out = ROOT/'reports/model_comparison_v1'
+    if test_2025:
+        methods={m:d.replace('_v1','_test2025_v1') for m,d in methods.items()}
+    out = ROOT/'reports'/('model_comparison_test2025_v1' if test_2025 else 'model_comparison_v1')
     out.mkdir(exist_ok=True)
     rows = []
     for target in ('target_co2_gco2eq_kwh', 'target_renewable_share_pct'):
         reference = None
         for method, directory in methods.items():
             parts = []
-            for year in range(2018, 2025):
+            for year in ([2025] if test_2025 else range(2018, 2025)):
                 frame = pd.read_csv(ROOT/'reports'/directory/f'predictions_{year}_{target}.csv')
                 parts.append(frame.loc[frame.common_scored == 1])
             frame = pd.concat(parts, ignore_index=True)
@@ -46,7 +48,8 @@ def main():
             ax.margins(y=.2)
             ax.set_ylabel('dimensionslos' if metric=='r2' else 'Prozentpunkte' if target.endswith('pct') else 'gCO₂eq/kWh')
         fig.suptitle('Grünanteil' if target.endswith('pct') else 'CO₂-Intensität')
-        fig.text(.5, .02, 'Validierung 2018–2024 · identische Stunden · retrospektives ERA5, kein operativer 72h-Test', ha='center')
+        period='Test 2025 · Training 2022–2024' if test_2025 else 'Validierung 2018–2024'
+        fig.text(.5, .02, period+' · identische Stunden · retrospektives ERA5, kein operativer 72h-Test', ha='center',fontsize=9)
         fig.tight_layout(rect=(0,.07,1,.94))
         for extension in ('png', 'pdf'):
             fig.savefig(out/f'{target}.{extension}', dpi=180)
@@ -56,4 +59,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--test-2025',action='store_true')
+    main(test_2025=parser.parse_args().test_2025)

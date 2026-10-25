@@ -5,8 +5,10 @@ import numpy as np
 from plot_linear_results import ROOT, pd, plt
 
 
-def main():
-    report = ROOT/'reports/linear_regression_test2025_v1'
+def main(hist=False, xgb=False):
+    report = ROOT/'reports'/('xgboost_test2025_v1' if xgb else 'hist_gradient_boosting_test2025_v1' if hist else 'linear_regression_test2025_v1')
+    method = 'xgboost' if xgb else 'hist_gradient_boosting' if hist else 'linear'
+    label = 'XGBoost' if xgb else 'HistGradientBoosting' if hist else 'Lineare Regression'
     out = report/'figures'
     out.mkdir(exist_ok=True)
     hashes = {}
@@ -20,10 +22,10 @@ def main():
         time = pd.to_datetime(frame.target_time_utc,utc=True)
         expected = pd.date_range('2025-01-01', '2026-01-01',freq='h',inclusive='left',tz='UTC')
         assert pd.DatetimeIndex(time).equals(expected)
-        assert np.isfinite(frame[['actual','linear']].to_numpy()).all()
+        assert np.isfinite(frame[['actual',method]].to_numpy()).all()
         fig, ax = plt.subplots(figsize=(18,6))
         ax.plot(time,frame.actual,label='Tatsächlicher Zielwert',color='#263746',linewidth=.65,alpha=.85)
-        ax.plot(time,frame.linear,label='Vorhersage · Lineare Regression',color='#2389d7',linewidth=.65,alpha=.7)
+        ax.plot(time,frame[method],label=f'Vorhersage · {label}',color='#16846a' if hist else '#2389d7',linewidth=.65,alpha=.7)
         ax.axhline(0,color='#b45309',linewidth=.8,linestyle='--')
         if unit=='%':
             ax.axhline(100,color='#b45309',linewidth=.8,linestyle='--')
@@ -33,7 +35,7 @@ def main():
         ax.set_xlim(expected[0],pd.Timestamp('2026-01-01',tz='UTC'))
         ax.set_ylabel(f'{title} ({unit})')
         ax.set_xlabel('Testjahr 2025 · Zeit in UTC')
-        ax.set_title(f'{title} · Lineare Regression · Ganzes Jahr 2025',fontsize=17,fontweight='bold',pad=16)
+        ax.set_title(f'{title} · {label} · Ganzes Jahr 2025',fontsize=17,fontweight='bold',pad=16)
         ax.legend(loc='upper center',bbox_to_anchor=(.5,1.01),ncol=2,framealpha=.95)
         ax.grid(alpha=.18)
         fig.text(.5,.065,'Training 2022–2024 · Alle 8.760 Stunden dargestellt · Keine Glättung oder Tagesmittel · Werte nicht begrenzt',ha='center',fontsize=10)
@@ -49,4 +51,9 @@ def main():
 
 
 if __name__=='__main__':
-    main()
+    import argparse
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--hist',action='store_true')
+    parser.add_argument('--xgboost',action='store_true')
+    args=parser.parse_args()
+    main(hist=args.hist,xgb=args.xgboost)
