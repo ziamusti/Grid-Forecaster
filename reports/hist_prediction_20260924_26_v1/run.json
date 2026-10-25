@@ -1,0 +1,62 @@
+{
+  "status": "complete",
+  "created_utc": "2026-10-25T21:17:05.568364+00:00",
+  "hours": 72,
+  "feature_count": 136,
+  "training_end": "2026-09-23T23:00:00Z",
+  "model_hashes": {
+    "reports/final_hist_gradient_boosting_2015_2026_v1/hist_gradient_boosting_target_co2_gco2eq_kwh.joblib": "760c475f4a18c7a98a24b1619b629654112777e895b8023acc88fe285b70229d",
+    "reports/final_hist_gradient_boosting_2015_2026_v1/hist_gradient_boosting_target_renewable_share_pct.joblib": "437e3d9df5424e0cb9ff1e9c6c38c57f9ed3b91886e2458fb6dbe7612382ee76"
+  },
+  "source_sha256": {
+    "data/processed/stage0_v2_sunshine/mastr_monthly_reconstructed.csv": "6e72ed6192ecba56fa584600620cf46ec941e13962f6a7a2726393c46ade26b5",
+    "data/raw/smard_prediction_inputs/20261025T200051Z/generation.csv": "18982c4dd40a0f9caa54bc6985c7e046f861877e1cfccb7eb4b8d66107e72ce5",
+    "data/raw/smard_prediction_inputs/20261025T200051Z/load.csv": "6628e78c1633a9ba10d716af0e78a59d6f38980c743d42be21a608d77da6f0c4",
+    "data/raw/weather_prediction_20260924_20260926_era5/manifest.json": "aa3328dc2246aa80db6278d0981166f23a39ac0ef9802b1f1e6c424369f30a04",
+    "reports/final_hist_gradient_boosting_2015_2026_v1/run.json": "d51a2679994e65a81c342889d9400d9f7e9db18f2252cf333d9d88d53ccb57ae",
+    "data/raw/weather_prediction_20260924_20260926_era5/berlin.json": "03101b85886ea56282c73bb3dc534ad28dbb2883c30d3c4a6adcc65f600b6880",
+    "data/raw/weather_prediction_20260924_20260926_era5/bremen.json": "3c28b75c4cd82814a12ed59c7db12655cd9543ace4294d4bc56c05ad84ce680e",
+    "data/raw/weather_prediction_20260924_20260926_era5/dresden.json": "0b90d9ba30abb5c299bbed5af9304f9c370449909c4cb0fadaca285d12decea2",
+    "data/raw/weather_prediction_20260924_20260926_era5/erfurt.json": "5ed579e01c1cba23db625f89e04f5eb78af210b08c1ddd9f73e6372dda994e46",
+    "data/raw/weather_prediction_20260924_20260926_era5/frankfurt.json": "141a016f5c32e271c7d07f7d64e43774c83651dc13a1b2c83ada4764efd185f6",
+    "data/raw/weather_prediction_20260924_20260926_era5/freiburg.json": "d8fcab40298fa894b08fc8ade376bea3dfcd01f28f9ee5a016ce61fc9217ef14",
+    "data/raw/weather_prediction_20260924_20260926_era5/hamburg.json": "243468bbb15ca27d647631101708721ad61b25a03765af54aa8a3e0f145c4799",
+    "data/raw/weather_prediction_20260924_20260926_era5/hannover.json": "6469d2b48a94472e4d07a370908f5ab24e390b117d1cead0cd79012b4492f6aa",
+    "data/raw/weather_prediction_20260924_20260926_era5/kiel.json": "e41648ee54ca0289ca450c33b3f42efa7b129b40f5c6153aa017944c6bf6a34a",
+    "data/raw/weather_prediction_20260924_20260926_era5/koeln.json": "183bc6ea9cff09a61e080625e9fc5f98f5bf0f5c7d6be718152fa9f49223903a",
+    "data/raw/weather_prediction_20260924_20260926_era5/leipzig.json": "6a88e104a7e7225a242efa24ba83dec351c8e81b06d948748630bf7855c4602c",
+    "data/raw/weather_prediction_20260924_20260926_era5/magdeburg.json": "95da5f47f3dfb1519b80281803a2ed486c7bfb9fed2ae8f0c1659a75e6dece2a",
+    "data/raw/weather_prediction_20260924_20260926_era5/mainz.json": "cbb3e370e804d00e3c57e0abe42eabbed99c3cc3b4aaac53f5993f99afdc8f19",
+    "data/raw/weather_prediction_20260924_20260926_era5/muenchen.json": "b87e1a3b61a068d980d8aaec67a39fe78b6cd52c56c3ae738c80ee3808263c80",
+    "data/raw/weather_prediction_20260924_20260926_era5/muenster.json": "5684e12eb9485fb09a65211969005942d923017d2bc5f4121913546dcdb10156",
+    "data/raw/weather_prediction_20260924_20260926_era5/nordsee_offshore.json": "94d93c66147abe97a981a59f7a871e0cc498f15e8548d9d6271db78f6b60b26a",
+    "data/raw/weather_prediction_20260924_20260926_era5/nuernberg.json": "c0c20b82dee7b395f1f037a6a96fa229cdc23d9d56065ccb6865628971f83d0c",
+    "data/raw/weather_prediction_20260924_20260926_era5/ostsee_offshore.json": "c7096252676e26cdc73c91d6199d2ba0c6825f929a9be91eb9f261dfbcde61e4",
+    "data/raw/weather_prediction_20260924_20260926_era5/potsdam.json": "15976dc20362ce3d8777d935befae515f7aae65ce07bb735c8a5671993a39dfc",
+    "data/raw/weather_prediction_20260924_20260926_era5/rostock.json": "e8ab034a24b420ee8c6006e2dca1488abf218897dbcfccd184e7a2198aff5db4",
+    "data/raw/weather_prediction_20260924_20260926_era5/saarbruecken.json": "75deebc567dacd0bd18b1a4bce0306a7bede3f3161cf571170d2f0f3b0e49744",
+    "data/raw/weather_prediction_20260924_20260926_era5/schwerin.json": "2dc9a3418887ea7e4390963c0034eda38e062293eca598027781f385e137458e",
+    "data/raw/weather_prediction_20260924_20260926_era5/stuttgart.json": "b579a06c7a328d8d5547ab14157b03548064e308b12a23ba81749ffbf31dc86e"
+  },
+  "script_sha256": "dcf8160f55c9c11809b6ecff7aadb69a0af803cf2827ed5b9405da070e80e6dd",
+  "retrospective_era5": true,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "limitations": [
+    "Actual historical weather; not an as-issued forecast",
+    "Revised SMARD snapshot and reconstructed MaStR capacity proxy"
+  ],
+  "summary": {
+    "predicted_co2_gco2eq_kwh": {
+      "min": 187.25431686869004,
+      "max": 680.6205792154003,
+      "mean": 444.35612450725927
+    },
+    "predicted_renewable_share_pct": {
+      "min": 23.02181536624722,
+      "max": 83.70456961039558,
+      "mean": 52.68344840871258
+    }
+  }
+}
