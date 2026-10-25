@@ -1,0 +1,10 @@
+{
+  "source_sha256": {
+    "reports/xgboost_test2025_v1/predictions_2025_target_co2_gco2eq_kwh.csv": "6e599bcdad149accadc223a811e0bfa2e2736949af24f624f2c1db6aa85d1f28",
+    "reports/xgboost_test2025_v1/predictions_2025_target_renewable_share_pct.csv": "daf5e9ab479792d6951c132f4be61e9bd306a77f229ed5ba62de5f9e61bf4fc0"
+  },
+  "hours_per_target": 8760,
+  "aggregation": null,
+  "timezone": "UTC",
+  "training_performed": false
+}
