@@ -1,0 +1,43 @@
+{
+  "hours": 72,
+  "start_utc": "2026-09-30T00:00:00+00:00",
+  "end_exclusive_utc": "2026-10-03T00:00:00+00:00",
+  "nuclear_zero_hours": 72,
+  "co2_estimated_hours": 0,
+  "missing_smard_hours": [],
+  "missing_co2_hours": [],
+  "sources": {
+    "smard_sha256": "0cf72ede9b76a03c9313be708931bcf7a1fe69a4f32e6fdbaebc1e699d863d09",
+    "co2_sha256": "5945f113fa22f41b1454cff32a3442bebfb1a8c2cbf42830361c28843ed1d3e9",
+    "smard_payload": {
+      "request_form": [
+        {
+          "moduleIds": [
+            1004066,
+            1001226,
+            1001225,
+            1004067,
+            1004068,
+            1001228,
+            1001224,
+            1001223,
+            1004069,
+            1004071,
+            1004070,
+            1001227
+          ],
+          "region": "DE",
+          "resolution": "hour",
+          "format": "CSV",
+          "timestamp_from": 1790726400000,
+          "timestamp_to": 1790985600000,
+          "type": "discrete",
+          "language": "de"
+        }
+      ]
+    },
+    "smard_raw": "data/raw/smard_actuals_20260930_02/20261026T165425Z",
+    "co2_raw": "data/raw/electricitymaps_actuals_20260930_02/20261026T165425Z"
+  },
+  "script_sha256": "3f4b09198bc41ca5881f6d3041f0a74448ed7797b0e91ef0c06ebdf46af16a0c"
+}
