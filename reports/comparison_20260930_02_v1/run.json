@@ -1,0 +1,25 @@
+{
+  "hours": 72,
+  "error_definition": "prediction minus actual",
+  "metrics": {
+    "co2_gco2eq_kwh": {
+      "mae": 21.182456538863832,
+      "rmse": 27.607779427230977,
+      "bias": 0.5252474289341404,
+      "predicted_mean": 472.0808029844897,
+      "actual_mean": 471.55555555555554
+    },
+    "renewable_share_pct": {
+      "mae": 3.3898969592633565,
+      "rmse": 4.133367941087716,
+      "bias": -0.27923196931702093,
+      "predicted_mean": 48.61293586953617,
+      "actual_mean": 48.8921678388532
+    }
+  },
+  "sources": {
+    "reports/hist_prediction_20260930_02_v1/predictions.csv": "3c7d9fdcdbbcb6932f23468f495a877c5cc7e14bc32b0c235e236d1199472575",
+    "reports/actuals_20260930_02_v1/actuals.csv": "0a5905e58e9799c0560985e1a759c060aca8b8921fc5b36762450c230786e888"
+  },
+  "script_sha256": "eec80ce3803434ae6cdee1eb61c1b61855ab277c5438b648ceaf5f6fb934c186"
+}
