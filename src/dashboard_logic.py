@@ -6,37 +6,44 @@ import pandas as pd
 METHOD = 'hist_gradient_boosting'
 
 
-def prediction_paths(root: Path, year: int, target: str) -> Path:
-    folder = ('hist_gradient_boosting_v1' if year <= 2024 else
-              f'hist_gradient_boosting_test{year}_v1')
+def prediction_paths(root: Path, year: int, target: str, price: bool) -> Path:
+    base = 'hist_gradient_boosting_price' if price else 'hist_gradient_boosting'
+    folder = f'{base}_v1' if year <= 2024 else f'{base}_test{year}_v1'
     return root/'reports'/folder/f'predictions_{year}_{target}.csv'
 
 
 def load_predictions(root: Path) -> pd.DataFrame:
-    targets = {'target_co2_gco2eq_kwh':'co2',
-               'target_renewable_share_pct':'renewable'}
+    # CO2 comes from the price-feature model (same procedure, +Day-ahead price
+    # at lag168h); renewable share stays on the original model (unchanged, no
+    # price feature was added there).
     pieces=[]
     for year in range(2018,2027):
-        merged=None
-        for target,name in targets.items():
-            path=prediction_paths(root,year,target)
-            frame=pd.read_csv(path,usecols=['target_time_utc','actual',METHOD,'common_scored'])
-            frame=frame.loc[frame.common_scored==1,['target_time_utc','actual',METHOD]]
-            frame=frame.rename(columns={'actual':f'actual_{name}',METHOD:f'predicted_{name}'})
-            merged=frame if merged is None else merged.merge(frame,on='target_time_utc',validate='one_to_one')
-        pieces.append(merged)
+        co2=pd.read_csv(prediction_paths(root,year,'target_co2_gco2eq_kwh',price=True),
+                         usecols=['target_time_utc','actual',METHOD,'common_scored'])
+        co2=co2.loc[co2.common_scored==1,['target_time_utc','actual',METHOD]]
+        co2=co2.rename(columns={'actual':'actual_co2',METHOD:'predicted_co2'})
+        renewable=pd.read_csv(prediction_paths(root,year,'target_renewable_share_pct',price=False),
+                               usecols=['target_time_utc','actual',METHOD,'common_scored'])
+        renewable=renewable.loc[renewable.common_scored==1,['target_time_utc','actual',METHOD]]
+        renewable=renewable.rename(columns={'actual':'actual_renewable',METHOD:'predicted_renewable'})
+        pieces.append(co2.merge(renewable,on='target_time_utc',validate='one_to_one'))
     result=pd.concat(pieces,ignore_index=True)
     extra_paths = [
-        root/'reports/hist_prediction_20260924_26_v1/predictions.csv',
-        root/'reports/hist_prediction_20260927_29_v1/predictions.csv',
+        (root/'reports/hist_prediction_price_20260924_26_v1/predictions.csv',
+         root/'reports/hist_prediction_20260924_26_v1/predictions.csv'),
+        (root/'reports/hist_prediction_price_20260927_29_v1/predictions.csv',
+         root/'reports/hist_prediction_20260927_29_v1/predictions.csv'),
+        (root/'reports/hist_prediction_price_20260930_02_v1/predictions.csv',
+         root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
     ]
-    for extra_path in extra_paths:
-        if not extra_path.exists():
+    for co2_path,renewable_path in extra_paths:
+        if not co2_path.exists():
             continue
-        extra=pd.read_csv(extra_path,usecols=['target_time_utc',
-            'predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
-        extra=extra.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
-                                   'predicted_renewable_share_pct':'predicted_renewable'})
+        co2_extra=pd.read_csv(co2_path,usecols=['target_time_utc','predicted_co2_gco2eq_kwh'])
+        co2_extra=co2_extra.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2'})
+        renewable_extra=pd.read_csv(renewable_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
+        renewable_extra=renewable_extra.rename(columns={'predicted_renewable_share_pct':'predicted_renewable'})
+        extra=co2_extra.merge(renewable_extra,on='target_time_utc',validate='one_to_one')
         if extra.isna().any().any():
             raise ValueError('Neue Vorhersagedatei enthält fehlende Werte')
         result=pd.concat([result,extra],ignore_index=True)
