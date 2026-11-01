@@ -1,0 +1,16 @@
+{
+  "without": {
+    "mae": 46.366654481815964,
+    "rmse": 58.110308248991615,
+    "r2": 0.8737110046915049
+  },
+  "with_price": {
+    "mae": 45.88125915567501,
+    "rmse": 57.63958356147434,
+    "r2": 0.875748735067561
+  },
+  "source": [
+    "reports/hist_gradient_boosting_test2025_v1/run.json",
+    "reports/hist_gradient_boosting_price_test2025_v1/run.json"
+  ]
+}

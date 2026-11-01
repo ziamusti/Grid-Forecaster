@@ -1,0 +1,23 @@
+{
+  "period_start_utc": "2026-07-01T00:00:00Z",
+  "period_end_exclusive_utc": "2026-09-24T00:00:00Z",
+  "hours": 2040,
+  "held_out": true,
+  "training_end_of_model": "2026-06-30T23:00:00Z",
+  "metrics": {
+    "mae": 34.57553858440225,
+    "rmse": 44.502745841996784,
+    "bias": -7.8282295883725395,
+    "r2": 0.9262015833234163,
+    "actual_mean": 348.4916666666667,
+    "predicted_mean": 340.6634370782941
+  },
+  "model_path": "reports/final_hist_gradient_boosting_price_2015_20260630_v1/hist_gradient_boosting_target_co2_gco2eq_kwh.joblib",
+  "source_table": "data/processed/stage0_v3_price/hourly_2026.csv",
+  "actual_source": "Electricity Maps lifecycle CO2, already present in the prepared table (same source as all other years targets); no new API pull for this evaluation",
+  "caveats": [
+    "Retrospective ERA5 weather for this period, not an as-issued forecast",
+    "Day-ahead price feature uses lag168h",
+    "Single 2040-hour window, not a full year; not directly comparable in magnitude to the pooled yearly test metrics"
+  ]
+}
