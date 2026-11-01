@@ -1,0 +1,28 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-01T18:03:12.595281+00:00",
+  "hours": 24,
+  "target_start_utc": "2026-11-02T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-03T00:00:00+00:00",
+  "model_training_end": "2026-10-26 23:00:00+00:00",
+  "model_sha256": "d5090aa616f381a6d04163eaad2b419e2fad42a9afff3cdb06fdf4c9aa8a5c45",
+  "weather_source": "Open-Meteo Forecast API (operational, not ERA5)",
+  "weather_manifest_sha256": "74d8ebf6d0ac6c9c76a7a22eb3c0f377899d4825b055e42812630c717493bc33",
+  "operational": true,
+  "retrospective_era5": false,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "limitations": [
+    "Real weather forecast, not yet-published actuals; forecast accuracy itself not evaluated here",
+    "SMARD/price lag inputs are fresh current-snapshot revisions, not as-issued history",
+    "Only CO2 predicted here; renewable share not part of this run"
+  ],
+  "summary": {
+    "predicted_co2_gco2eq_kwh": {
+      "min": 447.1059653875411,
+      "max": 651.944469328317,
+      "mean": 541.4912772180927
+    }
+  }
+}
