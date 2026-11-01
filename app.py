@@ -47,9 +47,12 @@ with st.sidebar:
     st.divider()
     st.caption('Ampel-Skala')
     st.markdown('🟢 Grün ≥ 60 % Grünanteil  \n🟡 Gelb 40–<60 %  \n🔴 Rot < 40 %')
-    if selected >= pd.Timestamp('2026-09-24').date():
+    if selected >= pd.Timestamp('2026-11-02').date():
         st.divider()
-        st.caption('24.–29.09.2026: Vorhersagen des finalen HistGradientBoosting-Modells mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
+        st.caption('02.11.2026: Erste echte operative Vorhersage — echte Wettervorhersage statt historischem ERA5-Wetter (CO₂ mit Preis-Merkmal, Trainingsende 26.10.2026). Alle Zeiten in UTC.')
+    elif selected >= pd.Timestamp('2026-09-24').date():
+        st.divider()
+        st.caption('24.09.–02.10.2026: Vorhersagen des finalen HistGradientBoosting-Modells (CO₂ mit Preis-Merkmal) mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
 
 day=frame.loc[frame.time_utc.dt.date==selected].copy().reset_index(drop=True)
 if day.empty:
