@@ -1,0 +1,25 @@
+{
+  "train_n": 26280,
+  "eligible_n": 6384,
+  "train_rank": 174,
+  "transformed_features": 174,
+  "intercept": 406.1913808529911,
+  "below_zero": 120,
+  "above_upper": 0,
+  "minimum": -230.62984032246675,
+  "maximum": 695.6787698928262,
+  "mean_original_mask": {
+    "validation_year": 2026,
+    "target": "target_co2_gco2eq_kwh",
+    "method": "mean",
+    "n": 6384,
+    "mae": 115.31969903031425,
+    "rmse": 135.41228804380924,
+    "r2": 0.2916198852987213
+  },
+  "train_years": [
+    2023,
+    2024,
+    2025
+  ]
+}
