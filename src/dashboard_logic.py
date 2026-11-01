@@ -35,13 +35,17 @@ def load_predictions(root: Path) -> pd.DataFrame:
          root/'reports/hist_prediction_20260927_29_v1/predictions.csv'),
         (root/'reports/hist_prediction_price_20260930_02_v1/predictions.csv',
          root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
+        (root/'reports/forecast_price_20261102_1d_v1/predictions.csv', None),
     ]
     for co2_path,renewable_path in extra_paths:
         if not co2_path.exists():
             continue
         co2_extra=pd.read_csv(co2_path,usecols=['target_time_utc','predicted_co2_gco2eq_kwh'])
         co2_extra=co2_extra.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2'})
-        renewable_extra=pd.read_csv(renewable_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
+        if renewable_path is None:
+            renewable_extra=pd.read_csv(co2_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
+        else:
+            renewable_extra=pd.read_csv(renewable_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
         renewable_extra=renewable_extra.rename(columns={'predicted_renewable_share_pct':'predicted_renewable'})
         extra=co2_extra.merge(renewable_extra,on='target_time_utc',validate='one_to_one')
         if extra.isna().any().any():
