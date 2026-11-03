@@ -1,0 +1,170 @@
+"""Retrospective inference with the price-feature final model; no fitting or target access.
+
+Copy of predict_hist_20260924_26.py pointed at the price-extended final model
+(reports/final_hist_gradient_boosting_price_2015_2026_v1, 137 features). Adds
+the Day-ahead price at lag168h from the already-downloaded raw price data
+(data/raw/energycharts_price/20261027T203022Z), averaging 15-minute values to
+the hour the same way scripts/add_price_stage0.py does.
+"""
+import argparse
+import csv
+import hashlib
+import json
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import joblib
+import numpy as np
+import pandas as pd
+from threadpoolctl import threadpool_limits
+
+from prepare_stage0 import TECH, WEATHER, capacity_reference, daylight, holidays, number
+
+ROOT = Path(__file__).resolve().parents[1]
+MODEL = ROOT / 'reports/final_hist_gradient_boosting_price_2015_2026_v1'
+SMARD = ROOT / 'data/raw/smard_prediction_inputs/20261025T200051Z'
+CAPACITY = ROOT / 'data/processed/stage0_v2_sunshine/mastr_monthly_reconstructed.csv'
+PRICE_RAW = ROOT / 'data/raw/energycharts_price/20261027T203022Z'
+PRICE_FEATURE = 'price_eur_mwh_lag168h'
+BERLIN = ZoneInfo('Europe/Berlin')
+
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def load_price_series():
+    buckets = {}
+    for path in sorted(PRICE_RAW.glob('*.json')):
+        if path.name == 'manifest.json':
+            continue
+        payload = json.loads(path.read_text())
+        assert payload['unit'] == 'EUR / MWh'
+        for entry in payload['data']:
+            t = datetime.fromisoformat(entry['timestamp']).astimezone(timezone.utc)
+            hour = t.replace(minute=0, second=0, microsecond=0)
+            value = entry['values']['day_ahead_price']
+            if value is None:
+                continue
+            buckets.setdefault(hour, []).append(float(value))
+    return {k: sum(v) / len(v) for k, v in buckets.items()}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--target-start', default='2026-09-24', help='First prediction day, UTC (YYYY-MM-DD)')
+    parser.add_argument('--smard-dir', type=Path, default=SMARD)
+    args = parser.parse_args()
+    start = datetime.strptime(args.target_start, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+    last = start + timedelta(days=2)
+    times = pd.date_range(start, periods=72, freq='h')
+    smard_dir = args.smard_dir.resolve()
+    weather_dir = ROOT / f'data/raw/weather_prediction_{start:%Y%m%d}_{last:%Y%m%d}_era5'
+    out = ROOT / f'reports/hist_prediction_price_{start:%Y%m%d}_{last:%d}_v1'
+    if out.exists():
+        raise FileExistsError('Prediction output already exists; no overwrite')
+    sources = [CAPACITY, smard_dir/'generation.csv', smard_dir/'load.csv', smard_dir/'manifest.json',
+               weather_dir/'manifest.json', MODEL/'run.json']
+    smard_manifest = json.loads((smard_dir/'manifest.json').read_text())
+    assert pd.Timestamp(smard_manifest['start_utc']) == times[0] - pd.Timedelta(hours=168)
+    assert pd.Timestamp(smard_manifest['end_exclusive_utc']) == times[0] - pd.Timedelta(hours=96)
+    for item in smard_manifest['files']:
+        assert sha(smard_dir/item['file']) == item['sha256']
+    weather_manifest = json.loads((weather_dir/'manifest.json').read_text())
+    assert weather_manifest['complete'] and len(weather_manifest['stations']) == 23
+    assert pd.Timestamp(weather_manifest['start_utc']) == times[0]
+    assert pd.Timestamp(weather_manifest['end_exclusive_utc']) == times[0] + pd.Timedelta(hours=72)
+    weather = {}
+    for station in weather_manifest['stations']:
+        p = weather_dir/(station+'.json')
+        assert sha(p) == weather_manifest['stations'][station]['sha256']
+        sources.append(p)
+        d = json.loads(p.read_text())['hourly']
+        assert d['time'] == [t.strftime('%Y-%m-%dT%H:%M') for t in times]
+        weather[station] = {t: {k: d[k][i] for k in d if k != 'time'} for i,t in enumerate(d['time'])}
+    energy = {}
+    for filename, mapping in [('generation.csv', TECH), ('load.csv', {'Netzlast':'grid_load'})]:
+        with (smard_dir/filename).open(encoding='utf-8-sig', newline='') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            columns = {k: next(c for c in reader.fieldnames if c.startswith(k+' [MWh]')) for k in mapping}
+            for row in reader:
+                t = datetime.strptime(row['Datum von'],'%d.%m.%Y %H:%M').replace(tzinfo=BERLIN).astimezone(timezone.utc)
+                dest = energy.setdefault(t, {})
+                for label,key in mapping.items():
+                    val = number(row[columns[label]], german=True)
+                    if key == 'nuclear' and val is None and t.astimezone(BERLIN).date() >= datetime(2023,4,16).date():
+                        val = 0.0
+                    assert val is not None and np.isfinite(val), (t,key)
+                    assert key not in dest, 'Duplicate energy source hour'
+                    dest[key] = val
+    with CAPACITY.open() as f:
+        capacity = {r['reference_date_exclusive']:r for r in csv.DictReader(f)}
+    price_series = load_price_series()
+    price_sources_missing = []
+    records = []
+    for stamp in times:
+        t = stamp.to_pydatetime(); local = t.astimezone(BERLIN); lag = t-timedelta(hours=168)
+        ref = str(capacity_reference(t)); c = capacity[ref]
+        row = dict(target_time_utc=t.isoformat(),target_time_berlin=local.isoformat(),
+                   energy_lag_time_utc=lag.isoformat(),capacity_reference_date=ref,
+                   hour_local=local.hour,weekday=local.weekday(),month=local.month,
+                   is_national_holiday=int(local.date() in holidays(local.year)),
+                   daylight_hours_approx=daylight(local.date()))
+        for station, table in weather.items():
+            w = table[t.strftime('%Y-%m-%dT%H:%M')]
+            for original, feature in WEATHER.items():
+                row[station+'__'+feature] = w[original.split(' (')[0]]
+            row[station+'__sunshine_duration_preceding_hour_s'] = w['sunshine_duration']
+        for tech in ['pv','wind_onshore','wind_offshore']:
+            row[tech+'_net_mw_reconstructed'] = float(c[tech+'_net_mw'])
+        for key,val in energy[lag].items():
+            row[key+'_mwh_lag168h'] = val
+        price = price_series.get(lag)
+        if price is None:
+            price_sources_missing.append(lag.isoformat())
+        row[PRICE_FEATURE] = price
+        records.append(row)
+    assert not price_sources_missing, f'Preis fehlt fuer: {price_sources_missing}'
+    frame = pd.DataFrame(records)
+    results = frame[['target_time_utc','target_time_berlin']].copy()
+    run = json.loads((MODEL/'run.json').read_text())
+    features = run['features']
+    assert len(features) == 137 and PRICE_FEATURE in features and len(frame) == 72
+    x = frame[features].to_numpy(float)
+    assert np.isfinite(x).all()
+    model_hashes = {}
+    for target in ['target_co2_gco2eq_kwh']:
+        p = MODEL/('hist_gradient_boosting_'+target+'.joblib')
+        model_hashes[str(p.relative_to(ROOT))] = sha(p)
+        expected = next(r['model_sha256'] for r in run['models'] if r['target']==target)
+        assert sha(p) == expected
+        bundle = joblib.load(p)
+        assert bundle['features'] == features
+        assert pd.Timestamp(bundle['training_end']) < times[0]
+        with threadpool_limits(limits=1):
+            pred = bundle['pipeline'].predict(x)
+        assert pred.shape == (72,) and np.isfinite(pred).all()
+        results['predicted_'+target.removeprefix('target_')] = pred
+    out.mkdir()
+    frame[['target_time_utc','target_time_berlin','energy_lag_time_utc','capacity_reference_date']+features].to_csv(out/'inputs.csv',index=False)
+    results.to_csv(out/'predictions.csv',index=False)
+    report = dict(status='complete',created_utc=datetime.now(timezone.utc).isoformat(),hours=72,
+        target_start_utc=times[0].isoformat(),target_end_exclusive_utc=(times[-1]+pd.Timedelta(hours=1)).isoformat(),
+        feature_count=len(features),training_end=run['training_end'],model_hashes=model_hashes,
+        source_sha256={str(p.relative_to(ROOT)):sha(p) for p in sources},
+        price_source=str(PRICE_RAW.relative_to(ROOT)),script_sha256=sha(Path(__file__)),
+        retrospective_era5=True,targets_read=False,refit=False,clipping=False,
+        limitations=['Actual historical weather; not an as-issued forecast',
+                     'Revised SMARD snapshot and reconstructed MaStR capacity proxy',
+                     'Day-ahead price feature uses lag168h, not the real-time price',
+                     'Renewable share not predicted here; dashboard keeps the non-price model for that target'],
+        summary={c:dict(min=float(results[c].min()),max=float(results[c].max()),mean=float(results[c].mean())) for c in results.columns if c.startswith('predicted_')})
+    for rel,digest in model_hashes.items(): assert sha(ROOT/rel)==digest
+    (out/'run.json').write_text(json.dumps(report,indent=2))
+    print(json.dumps(report['summary'],indent=2))
+    print(out)
+
+
+if __name__ == '__main__':
+    main()
