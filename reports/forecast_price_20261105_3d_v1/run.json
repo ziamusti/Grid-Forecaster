@@ -1,0 +1,33 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-05T14:56:02.926646+00:00",
+  "hours": 72,
+  "target_start_utc": "2026-11-05T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-08T00:00:00+00:00",
+  "model_training_end": "2026-10-26 23:00:00+00:00",
+  "model_sha256": "d5090aa616f381a6d04163eaad2b419e2fad42a9afff3cdb06fdf4c9aa8a5c45",
+  "weather_source": "Open-Meteo Forecast API (operational, not ERA5)",
+  "weather_manifest_sha256": "a84a44235d0a4f3e00f7ba9e52d3121a1c7c04446c1996ac1f9a344a94724242",
+  "operational": true,
+  "retrospective_era5": false,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "limitations": [
+    "Real weather forecast, not yet-published actuals; forecast accuracy itself not evaluated here",
+    "SMARD/price lag inputs are fresh current-snapshot revisions, not as-issued history",
+    "Only CO2 predicted here; renewable share not part of this run"
+  ],
+  "summary": {
+    "predicted_co2_gco2eq_kwh": {
+      "min": 349.4795401940604,
+      "max": 651.2463576457023,
+      "mean": 487.8716832149993
+    }
+  },
+  "renewable_share_added": {
+    "model": "reports/final_hist_gradient_boosting_2015_2026_v1/hist_gradient_boosting_target_renewable_share_pct.joblib",
+    "model_training_end": "2026-09-23 23:00:00+00:00",
+    "note": "Old non-price model; this forecast day is unseen for it too (training end 2026-09-23)"
+  }
+}
