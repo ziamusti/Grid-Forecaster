@@ -23,8 +23,8 @@ from prepare_stage0 import TECH, WEATHER, capacity_reference, daylight, holidays
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / 'reports/final_hist_gradient_boosting_price_2015_20261026_v1'
-SMARD_DIR = ROOT / 'data/raw/smard_range/20261101T171602Z'
-CAPACITY = ROOT / 'data/processed/stage0_v2_sunshine/mastr_monthly_reconstructed.csv'
+SMARD_DIR = ROOT / 'data/raw/smard_range/20261105T145126Z'
+CAPACITY = ROOT / 'data/processed/mastr_capacity_20261105/mastr_monthly_reconstructed.csv'
 PRICE_DIRS = [ROOT / 'data/raw/energycharts_price/20261027T203022Z',
               ROOT / 'data/raw/energycharts_price_gap/20261101T175239Z']
 PRICE_FEATURE = 'price_eur_mwh_lag168h'
