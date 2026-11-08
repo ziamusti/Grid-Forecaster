@@ -24,7 +24,7 @@ from threadpoolctl import threadpool_limits
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bundesland import BUNDESLAENDER
 from build_bundesland_stage0 import LAND_STATIONS, LAND_LAT, WEATHER_FEATURES, load_holiday_sets
-from prepare_stage0 import WEATHER, capacity_reference, daylight, local_to_utc, BERLIN
+from prepare_stage0 import WEATHER, capacity_reference, daylight, BERLIN
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPACITY = ROOT / 'data/live_capacity/mastr_monthly_reconstructed_bundesland.csv'

@@ -1,0 +1,54 @@
+{
+  "retrieved_at_utc": "2026-11-08T19:58:29.235216+00:00",
+  "endpoint": "https://date.nager.at/api/v3/PublicHolidays/{year}/DE",
+  "years": [
+    {
+      "year": 2015,
+      "count": 17
+    },
+    {
+      "year": 2016,
+      "count": 17
+    },
+    {
+      "year": 2017,
+      "count": 17
+    },
+    {
+      "year": 2018,
+      "count": 17
+    },
+    {
+      "year": 2019,
+      "count": 19
+    },
+    {
+      "year": 2020,
+      "count": 20
+    },
+    {
+      "year": 2021,
+      "count": 19
+    },
+    {
+      "year": 2022,
+      "count": 19
+    },
+    {
+      "year": 2023,
+      "count": 19
+    },
+    {
+      "year": 2024,
+      "count": 19
+    },
+    {
+      "year": 2025,
+      "count": 20
+    },
+    {
+      "year": 2026,
+      "count": 19
+    }
+  ]
+}
