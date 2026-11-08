@@ -1,0 +1,15 @@
+daily_forecast:
+  image: python:3.9
+  only:
+    - schedules
+  script:
+    - pip install -r requirements-stage0.txt
+    - python scripts/download_weather_forecast_range.py --target-start "$(date -u +%F)" --days 3
+    - python scripts/download_smard_range.py --start "$(date -u -d '10 days ago' +%F)" --end-exclusive "$(date -u +%F)"
+    - python scripts/predict_price_forecast.py --target-start "$(date -u +%F)" --days 3 --weather-dir "data/raw/weather_forecast_$(date -u +%Y%m%d)_3d"
+    - python scripts/predict_renewable_forecast.py --forecast-dir "reports/forecast_price_$(date -u +%Y%m%d)_3d_v1"
+    - git config user.email "ci@htw-berlin.de"
+    - git config user.name "GitLab CI"
+    - git add reports/ data/raw/
+    - git commit -m "Automatische Vorhersage $(date -u +%F)" || echo "Keine Änderungen"
+    - git push "https://oauth2:${CI_PUSH_TOKEN}@gitlab.rz.htw-berlin.de/s0587448/grid-forecaster.git" HEAD:main
