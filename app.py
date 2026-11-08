@@ -1,9 +1,6 @@
 """Historical Stage-0 result explorer. Run: streamlit run app.py"""
 from pathlib import Path
-import os
-import tempfile
-os.environ.setdefault('MPLCONFIGDIR',tempfile.mkdtemp(prefix='grid-streamlit-mpl-'))
-import matplotlib.pyplot as plt
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -47,7 +44,10 @@ with st.sidebar:
     st.divider()
     st.caption('Ampel-Skala')
     st.markdown('🟢 Grün ≥ 60 % Grünanteil  \n🟡 Gelb 40–<60 %  \n🔴 Rot < 40 %')
-    if selected >= pd.Timestamp('2026-11-02').date():
+    if selected >= pd.Timestamp('2026-11-05').date():
+        st.divider()
+        st.caption('05.–07.11.2026: 3-Tage-Vorhersage mit aktualisierter MaStR-Kapazität (Stand 05.11.2026) — echte Wettervorhersage statt historischem ERA5-Wetter (CO₂ mit Preis-Merkmal, Trainingsende 26.10.2026). Alle Zeiten in UTC.')
+    elif selected >= pd.Timestamp('2026-11-02').date():
         st.divider()
         st.caption('02.11.2026: Erste echte operative Vorhersage — echte Wettervorhersage statt historischem ERA5-Wetter (CO₂ mit Preis-Merkmal, Trainingsende 26.10.2026). Alle Zeiten in UTC.')
     elif selected >= pd.Timestamp('2026-09-24').date():
@@ -60,8 +60,9 @@ if day.empty:
     st.stop()
 day=add_scores(day)
 best=best_window(day,duration)
+ICONS={'Grün':'🟢','Gelb':'🟡','Rot':'🔴'}
 label,color=category(best['average_renewable'])
-icon={'Grün':'🟢','Gelb':'🟡','Rot':'🔴'}[label]
+icon=ICONS[label]
 trend=day.predicted_co2.iloc[-1]-day.predicted_co2.iloc[0]
 trend_icon,trend_text=('📉','wird grüner') if trend < -5 else ('📈','wird emissionsreicher') if trend > 5 else ('➡️','bleibt etwa stabil')
 
@@ -78,31 +79,61 @@ c4.metric('Kennzahl −2 bis +2',f'{best["score"]:+.1f}',help='+2 bedeutet inner
 
 st.divider()
 
-fig,ax=plt.subplots(figsize=(13,4.6))
-fig.patch.set_alpha(0)
-ax.set_facecolor('none')
-hours=day.time_utc.dt.hour
-ax.plot(hours,day.predicted_co2,color='#263746',linewidth=2.2,label='CO₂-Intensität')
-ax.set_xlabel('Stunde (UTC)');ax.set_ylabel('gCO₂eq/kWh',color='#263746')
-ax.set_xticks(range(0,24,2));ax.grid(alpha=.18,linestyle='--')
-for spine in ('top','right'):
-    ax.spines[spine].set_visible(False)
-ax2=ax.twinx()
-ax2.plot(hours,day.predicted_renewable,color='#16846a',linewidth=2.2,label='Grünanteil')
-ax2.set_ylabel('Grünanteil (%)',color='#16846a');ax2.set_ylim(0,100)
-ax2.spines['top'].set_visible(False)
+COLORS={'CO₂-Intensität':'#263746','Grünanteil':'#16846a'}
+color_scale=alt.Scale(domain=list(COLORS),range=list(COLORS.values()))
+legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=13)
+
+chart_df=day[['time_utc','predicted_co2','predicted_renewable']].copy()
+chart_df['hour']=chart_df.time_utc.dt.hour
+co2_df=chart_df.assign(reihe='CO₂-Intensität')
+renew_df=chart_df.assign(reihe='Grünanteil')
 start=best['start'].hour;end=best['end_exclusive'].hour
-window_patch=ax.axvspan(start,end,color='#8fd3ac',alpha=.3,label='Bestes Zeitfenster')
-handles=[*ax.get_lines(),*ax2.get_lines(),window_patch]
-ax.legend(handles,[h.get_label() for h in handles],loc='upper center',ncol=3,frameon=False,
-          bbox_to_anchor=(.5,1.14))
-st.pyplot(fig,width='stretch')
-plt.close(fig)
+
+nearest=alt.selection_point(nearest=True,on='pointerover',fields=['hour'],empty=False)
+window_rect=alt.Chart(pd.DataFrame({'start':[start],'end':[end]})).mark_rect(
+    color='#8fd3ac',opacity=.3).encode(x='start:Q',x2='end:Q')
+window_top=float(day.predicted_co2.max())
+window_label=alt.Chart(pd.DataFrame({'mid':[(start+end)/2],'predicted_co2':[window_top]})).mark_text(
+    align='center',baseline='top',dy=4,fontSize=11,color='#2f6b48',fontWeight='bold'
+    ).encode(x='mid:Q',y=alt.Y('predicted_co2:Q',scale=alt.Scale(zero=False),axis=None),
+             text=alt.value('Bestes Zeitfenster'))
+co2_line=alt.Chart(co2_df).mark_line(strokeWidth=2.2).encode(
+    x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+    y=alt.Y('predicted_co2:Q',title='gCO₂eq/kWh',scale=alt.Scale(zero=False),
+            axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
+    color=alt.Color('reihe:N',scale=color_scale,legend=legend))
+renew_line=alt.Chart(renew_df).mark_line(strokeWidth=2.2).encode(
+    x='hour:Q',y=alt.Y('predicted_renewable:Q',title='Grünanteil (%)',scale=alt.Scale(domain=[0,100]),
+            axis=alt.Axis(orient='right',titleColor='#16846a',labelColor='#16846a')),
+    color=alt.Color('reihe:N',scale=color_scale,legend=legend))
+selectors=alt.Chart(chart_df).mark_point().encode(x='hour:Q',opacity=alt.value(0),tooltip=alt.value(None)
+    ).add_params(nearest)
+rule=alt.Chart(chart_df).mark_rule(color='gray').encode(
+    x='hour:Q',opacity=alt.condition(nearest,alt.value(.4),alt.value(0)))
+co2_points=co2_line.mark_point(size=70).encode(
+    opacity=alt.condition(nearest,alt.value(1),alt.value(0)))
+renew_points=renew_line.mark_point(size=70).encode(
+    opacity=alt.condition(nearest,alt.value(1),alt.value(0)))
+co2_text=co2_line.mark_text(align='left',dx=10,dy=-10,fontSize=13,fontWeight='bold',color='#263746').encode(
+    text=alt.condition(nearest,alt.Text('predicted_co2:Q',format='.0f'),alt.value('')))
+renew_text=renew_line.mark_text(align='left',dx=10,dy=10,fontSize=13,fontWeight='bold',color='#16846a').encode(
+    text=alt.condition(nearest,alt.Text('predicted_renewable:Q',format='.0f'),alt.value('')))
+chart=alt.layer(window_rect,window_label,co2_line,renew_line,selectors,rule,co2_points,renew_points,co2_text,renew_text
+    ).resolve_scale(y='independent',color='shared').properties(height=440)
+st.altair_chart(chart,use_container_width=True)
+st.caption('🟩 Grün hinterlegt: bestes Zeitfenster für die gewählte Jobdauer · Zahlen beim Überfahren mit der Maus.')
 
 with st.expander('Stündliche Werte anzeigen'):
     table=day[['time_utc','predicted_co2','predicted_renewable','co2_change','score']].copy()
-    table['Ampel']=table.predicted_renewable.map(lambda value:category(value)[0])
-    table.columns=['Zeit (UTC)','CO₂-Prognose','Grünanteil (%)','CO₂-Änderung','Kennzahl','Ampel']
-    st.dataframe(table,hide_index=True,width='stretch')
+    table['Ampel']=table.predicted_renewable.map(lambda value:ICONS[category(value)[0]])
+    table['time_utc']=table.time_utc.dt.strftime('%H:%M')
+    table.columns=['Zeit (UTC)','CO₂ (gCO₂eq/kWh)','Grünanteil (%)','Δ CO₂','Kennzahl','Ampel']
+    st.dataframe(table,hide_index=True,width='stretch',column_config={
+        'CO₂ (gCO₂eq/kWh)':st.column_config.NumberColumn(format='%.0f'),
+        'Grünanteil (%)':st.column_config.ProgressColumn(format='%.0f %%',min_value=0,max_value=100),
+        'Δ CO₂':st.column_config.NumberColumn(format='%+.1f'),
+        'Kennzahl':st.column_config.NumberColumn(format='%+d'),
+        'Ampel':st.column_config.TextColumn(width='small'),
+    })
 
 st.caption('Retrospektive Untersuchung mit historischem ERA5-Wetter. Gezeigt werden zeitlich getrennte HistGradientBoosting-Vorhersagen, keine zukünftige Wetterprognose. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')
