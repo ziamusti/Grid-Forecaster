@@ -62,6 +62,7 @@ def load_predictions(root: Path) -> pd.DataFrame:
         (root/'reports/hist_prediction_price_20260930_02_v1/predictions.csv',
          root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
         (root/'reports/forecast_price_20261102_1d_v1/predictions.csv', None),
+        (root/'reports/forecast_price_20261105_3d_v1/predictions.csv', None),
     ]
     for co2_path,renewable_path in extra_paths:
         if not co2_path.exists():
