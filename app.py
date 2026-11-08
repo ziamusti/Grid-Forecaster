@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from src.dashboard_logic import add_scores,best_window,category,load_predictions
+from src.dashboard_logic import add_scores,best_window,category,load_bundesland_predictions,load_predictions
 
 ROOT=Path(__file__).resolve().parent
 st.set_page_config(page_title='Grid Forecaster',page_icon='🌱',layout='wide')
@@ -29,6 +29,10 @@ st.markdown('<div class="hero"><h1>🌱 Grid Forecaster</h1>'
 @st.cache_data(show_spinner=False,ttl=60)
 def data(source_version='historical-plus-september-through-29-v2'):
     return load_predictions(ROOT)
+
+@st.cache_data(show_spinner=False,ttl=60)
+def bundesland_data():
+    return load_bundesland_predictions()
 
 try:
     frame=data()
@@ -168,5 +172,50 @@ if day[BREAKDOWN_COLS].notna().all().all():
 else:
     st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor (nur für historische '
             'Jahre 2018–2026 verfügbar, noch nicht für die aktuellen operativen Vorhersagen).')
+
+st.divider()
+st.markdown('#### Bundesland-Vorhersage (live, gepooltes Modell)')
+bl_frame=bundesland_data()
+if bl_frame is None or bl_frame.empty:
+    st.info('Noch keine Bundesland-Vorhersage verfügbar (wird täglich automatisch erzeugt, nur für die '
+            'jeweils nächsten Tage).')
+else:
+    states=sorted(bl_frame.bundesland.unique())
+    chosen_state=st.selectbox('Bundesland',states,index=states.index('Berlin') if 'Berlin' in states else 0)
+    bl_day=bl_frame.loc[(bl_frame.bundesland==chosen_state)&(bl_frame.time_utc.dt.date==selected)].copy()
+    if bl_day.empty:
+        st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor — das gepoolte '
+                'Bundesland-Modell liefert nur eine Vorhersage für die jeweils nächsten Tage, keine '
+                'historischen Werte.')
+    else:
+        bl_day['hour']=bl_day.time_utc.dt.hour
+        bl_co2_df=bl_day.assign(reihe='CO₂-Intensität')
+        bl_renew_df=bl_day.assign(reihe='Grünanteil')
+        bl_nearest=alt.selection_point(nearest=True,on='pointerover',fields=['hour'],empty=False)
+        bl_co2_line=alt.Chart(bl_co2_df).mark_line(strokeWidth=2.2).encode(
+            x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+            y=alt.Y('predicted_co2:Q',title='gCO₂eq/kWh',scale=alt.Scale(zero=False),
+                    axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
+            color=alt.Color('reihe:N',scale=color_scale,legend=legend))
+        bl_renew_line=alt.Chart(bl_renew_df).mark_line(strokeWidth=2.2).encode(
+            x='hour:Q',y=alt.Y('predicted_renewable:Q',title='Grünanteil (%)',scale=alt.Scale(domain=[0,100]),
+                    axis=alt.Axis(orient='right',titleColor='#16846a',labelColor='#16846a')),
+            color=alt.Color('reihe:N',scale=color_scale,legend=legend))
+        bl_selectors=alt.Chart(bl_day).mark_point().encode(x='hour:Q',opacity=alt.value(0),tooltip=alt.value(None)
+            ).add_params(bl_nearest)
+        bl_rule=alt.Chart(bl_day).mark_rule(color='gray').encode(
+            x='hour:Q',opacity=alt.condition(bl_nearest,alt.value(.4),alt.value(0)))
+        bl_co2_points=bl_co2_line.mark_point(size=70).encode(opacity=alt.condition(bl_nearest,alt.value(1),alt.value(0)))
+        bl_renew_points=bl_renew_line.mark_point(size=70).encode(opacity=alt.condition(bl_nearest,alt.value(1),alt.value(0)))
+        bl_co2_text=bl_co2_line.mark_text(align='left',dx=10,dy=-10,fontSize=13,fontWeight='bold',color='#263746').encode(
+            text=alt.condition(bl_nearest,alt.Text('predicted_co2:Q',format='.0f'),alt.value('')))
+        bl_renew_text=bl_renew_line.mark_text(align='left',dx=10,dy=10,fontSize=13,fontWeight='bold',color='#16846a').encode(
+            text=alt.condition(bl_nearest,alt.Text('predicted_renewable:Q',format='.0f'),alt.value('')))
+        bl_chart=alt.layer(bl_co2_line,bl_renew_line,bl_selectors,bl_rule,bl_co2_points,bl_renew_points,bl_co2_text,bl_renew_text
+            ).resolve_scale(y='independent',color='shared').properties(height=360)
+        st.altair_chart(bl_chart,use_container_width=True)
+        st.caption('Gepooltes Modell (ein gemeinsames Modell für alle 16 Bundesländer, "Bundesland" als '
+                    'Eingabe-Merkmal) — schwächer als das nationale Modell, da je Bundesland nur 1–2 '
+                    'Wetterstationen statt 23 einfließen. Separate Modelle je Bundesland noch nicht verglichen.')
 
 st.caption('Retrospektive Untersuchung mit historischem ERA5-Wetter. Gezeigt werden zeitlich getrennte HistGradientBoosting-Vorhersagen, keine zukünftige Wetterprognose. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')

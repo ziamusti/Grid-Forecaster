@@ -7,6 +7,7 @@ import pandas as pd
 
 METHOD = 'hist_gradient_boosting'
 LIVE_PREDICTIONS_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions.csv'
+BUNDESLAND_LIVE_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions_bundesland.csv'
 RENEWABLE_SOURCES = ['wind_onshore', 'wind_offshore', 'solar', 'biomass', 'hydro', 'other_renewables']
 SELF_CO2_DEV = 'hist_gradient_boosting_self_co2_v1'
 SELF_CO2_FINAL = 'final_hist_gradient_boosting_self_co2_2015_20261026_v1'
@@ -101,6 +102,23 @@ def load_live_predictions() -> pd.DataFrame | None:
         return None
     if frame.empty:
         return None
+    return frame.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
+                                  'predicted_renewable_share_pct':'predicted_renewable'})
+
+
+def load_bundesland_predictions() -> pd.DataFrame | None:
+    # Written daily by the same GitHub Actions job as load_live_predictions(),
+    # one extra column (predicted_co2_gco2eq_kwh/predicted_renewable_share_pct
+    # per Bundesland). Pooled model, next few days only - no historical
+    # per-Bundesland data wired into the dashboard (yet).
+    try:
+        frame=pd.read_csv(BUNDESLAND_LIVE_URL,
+                           usecols=['target_time_utc','bundesland','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
+    except (URLError, OSError, ValueError):
+        return None
+    if frame.empty:
+        return None
+    frame['time_utc']=pd.to_datetime(frame.pop('target_time_utc'),utc=True)
     return frame.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                   'predicted_renewable_share_pct':'predicted_renewable'})
 
