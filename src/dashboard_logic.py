@@ -1,9 +1,12 @@
 """Pure helpers for the historical Stage-0 Streamlit dashboard."""
+from __future__ import annotations
 from pathlib import Path
+from urllib.error import URLError
 import pandas as pd
 
 
 METHOD = 'hist_gradient_boosting'
+LIVE_PREDICTIONS_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions.csv'
 
 
 def prediction_paths(root: Path, year: int, target: str, price: bool) -> Path:
@@ -36,7 +39,6 @@ def load_predictions(root: Path) -> pd.DataFrame:
         (root/'reports/hist_prediction_price_20260930_02_v1/predictions.csv',
          root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
         (root/'reports/forecast_price_20261102_1d_v1/predictions.csv', None),
-        (root/'reports/forecast_price_20261105_3d_v1/predictions.csv', None),
     ]
     for co2_path,renewable_path in extra_paths:
         if not co2_path.exists():
@@ -52,11 +54,31 @@ def load_predictions(root: Path) -> pd.DataFrame:
         if extra.isna().any().any():
             raise ValueError('Neue Vorhersagedatei enthält fehlende Werte')
         result=pd.concat([result,extra],ignore_index=True)
+    live=load_live_predictions()
+    if live is not None:
+        result=pd.concat([result,live],ignore_index=True)
+        result=result.drop_duplicates('target_time_utc',keep='last')
     result['time_utc']=pd.to_datetime(result.pop('target_time_utc'),utc=True)
     result=result.sort_values('time_utc').reset_index(drop=True)
     assert result.time_utc.is_unique
     assert result[['time_utc','predicted_co2','predicted_renewable']].notna().all().all()
     return result
+
+
+def load_live_predictions() -> pd.DataFrame | None:
+    # Written daily by the GitHub Actions job in the separate
+    # grid-forecaster-data repo; not mirrored from GitLab, so it survives
+    # pushes to this repo. None on any fetch problem, so a stale network or
+    # an empty/missing file degrades to the historical data only.
+    try:
+        frame=pd.read_csv(LIVE_PREDICTIONS_URL,
+                           usecols=['target_time_utc','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
+    except (URLError, OSError, ValueError):
+        return None
+    if frame.empty:
+        return None
+    return frame.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
+                                  'predicted_renewable_share_pct':'predicted_renewable'})
 
 
 def category(renewable: float) -> tuple[str,str]:
