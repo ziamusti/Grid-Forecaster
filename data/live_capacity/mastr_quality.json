@@ -1,0 +1,34 @@
+{
+  "counts": {
+    "all_units": 6679274,
+    "included_pv": 6568092,
+    "temporary_shutdown_counted_as_installed": 8262,
+    "excluded_planned": 75420,
+    "excluded_not_germany": 33,
+    "excluded_commissioning_outside_screening_bounds": 196,
+    "included_pre1980_pv": 501,
+    "excluded_missing_or_nonpositive_net_capacity": 1,
+    "excluded_invalid_retirement_date": 1,
+    "excluded_retired_without_date": 1,
+    "included_wind_onshore": 33711,
+    "included_wind_offshore": 1819,
+    "included_pre1980_wind_onshore": 1
+  },
+  "excluded_net_mw": {
+    "planned": 63803.38095599852,
+    "not_germany": 34.054599999999986,
+    "commissioning_outside_screening_bounds": 0.9726659999999998,
+    "invalid_retirement_date": 0.0006,
+    "retired_without_date": 0.0085
+  },
+  "power_field": "Nettonennleistung kW / 1000",
+  "status": "retrospective_proxy_not_historically_available",
+  "snapshot": "2026-11-05",
+  "limitations": [
+    "survivorship and deleted units",
+    "historical capacity changes unavailable",
+    "temporary shutdowns do not remove installed capacity",
+    "dates before screening thresholds excluded; no dates guessed",
+    "registration dates do not reconstruct pre-2019 publication history"
+  ]
+}
