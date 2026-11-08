@@ -1,0 +1,186 @@
+{
+  "berlin": {
+    "latitude": "52.5",
+    "longitude": "13.5",
+    "elevation": "38.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "bremen": {
+    "latitude": "53.0",
+    "longitude": "8.75",
+    "elevation": "16.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "dresden": {
+    "latitude": "51.0",
+    "longitude": "13.75",
+    "elevation": "117.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "erfurt": {
+    "latitude": "51.0",
+    "longitude": "11.0",
+    "elevation": "195.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "frankfurt": {
+    "latitude": "50.0",
+    "longitude": "8.75",
+    "elevation": "105.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "freiburg": {
+    "latitude": "48.0",
+    "longitude": "7.75",
+    "elevation": "270.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "hamburg": {
+    "latitude": "53.5",
+    "longitude": "10.0",
+    "elevation": "13.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "hannover": {
+    "latitude": "52.5",
+    "longitude": "9.75",
+    "elevation": "56.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "kiel": {
+    "latitude": "54.25",
+    "longitude": "10.0",
+    "elevation": "19.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "koeln": {
+    "latitude": "51.0",
+    "longitude": "7.0",
+    "elevation": "62.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "leipzig": {
+    "latitude": "51.25",
+    "longitude": "12.25",
+    "elevation": "111.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "magdeburg": {
+    "latitude": "52.25",
+    "longitude": "11.75",
+    "elevation": "64.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "mainz": {
+    "latitude": "50.0",
+    "longitude": "8.25",
+    "elevation": "96.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "muenchen": {
+    "latitude": "48.25",
+    "longitude": "11.5",
+    "elevation": "524.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "muenster": {
+    "latitude": "52.0",
+    "longitude": "7.75",
+    "elevation": "69.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "nordsee_offshore": {
+    "latitude": "54.0",
+    "longitude": "7.0",
+    "elevation": "0.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "nuernberg": {
+    "latitude": "49.5",
+    "longitude": "11.0",
+    "elevation": "318.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "ostsee_offshore": {
+    "latitude": "54.5",
+    "longitude": "13.0",
+    "elevation": "0.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "potsdam": {
+    "latitude": "52.5",
+    "longitude": "13.0",
+    "elevation": "30.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "rostock": {
+    "latitude": "54.0",
+    "longitude": "12.0",
+    "elevation": "17.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "saarbruecken": {
+    "latitude": "49.25",
+    "longitude": "7.0",
+    "elevation": "199.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "schwerin": {
+    "latitude": "53.75",
+    "longitude": "11.5",
+    "elevation": "54.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  },
+  "stuttgart": {
+    "latitude": "48.75",
+    "longitude": "9.25",
+    "elevation": "255.0",
+    "utc_offset_seconds": "0",
+    "timezone": "GMT",
+    "timezone_abbreviation": "GMT"
+  }
+}

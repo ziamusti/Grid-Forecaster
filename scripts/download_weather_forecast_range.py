@@ -35,7 +35,7 @@ def main():
     tree = ast.parse((ROOT / 'archive/legacy_2026-10-20/src/download_weather_2026.py').read_text())
     locations = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
                      and any(isinstance(t, ast.Name) and t.id == 'LOCATIONS' for t in n.targets))
-    metadata = json.loads((ROOT / 'data/processed/stage0_v2_sunshine/weather_metadata.json').read_text())
+    metadata = json.loads((ROOT / 'data/live_capacity/weather_metadata.json').read_text())
     assert len(locations) == 23
     OUT.mkdir(parents=True, exist_ok=True)
     manifest = dict(start_utc=start.strftime('%Y-%m-%dT00:00:00Z'), hours=hours,
