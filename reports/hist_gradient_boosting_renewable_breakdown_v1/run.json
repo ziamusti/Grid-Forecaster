@@ -1,0 +1,608 @@
+{
+  "params": {
+    "loss": "squared_error",
+    "learning_rate": 0.1,
+    "max_iter": 100,
+    "max_leaf_nodes": 31,
+    "max_depth": null,
+    "min_samples_leaf": 20,
+    "l2_regularization": 0.0,
+    "max_bins": 255,
+    "early_stopping": false,
+    "random_state": 42,
+    "categorical_features": null
+  },
+  "folds": [
+    {
+      "train_years": [
+        2015,
+        2016,
+        2017
+      ],
+      "validation_year": 2018
+    },
+    {
+      "train_years": [
+        2016,
+        2017,
+        2018
+      ],
+      "validation_year": 2019
+    },
+    {
+      "train_years": [
+        2017,
+        2018,
+        2019
+      ],
+      "validation_year": 2020
+    },
+    {
+      "train_years": [
+        2018,
+        2019,
+        2020
+      ],
+      "validation_year": 2021
+    },
+    {
+      "train_years": [
+        2019,
+        2020,
+        2021
+      ],
+      "validation_year": 2022
+    },
+    {
+      "train_years": [
+        2020,
+        2021,
+        2022
+      ],
+      "validation_year": 2023
+    },
+    {
+      "train_years": [
+        2021,
+        2022,
+        2023
+      ],
+      "validation_year": 2024
+    }
+  ],
+  "features": [
+    "hour_local",
+    "weekday",
+    "month",
+    "is_national_holiday",
+    "daylight_hours_approx",
+    "berlin__temperature_2m_c",
+    "berlin__cloud_cover_pct",
+    "berlin__wind_speed_100m_ms",
+    "berlin__shortwave_radiation_wm2",
+    "bremen__temperature_2m_c",
+    "bremen__cloud_cover_pct",
+    "bremen__wind_speed_100m_ms",
+    "bremen__shortwave_radiation_wm2",
+    "dresden__temperature_2m_c",
+    "dresden__cloud_cover_pct",
+    "dresden__wind_speed_100m_ms",
+    "dresden__shortwave_radiation_wm2",
+    "erfurt__temperature_2m_c",
+    "erfurt__cloud_cover_pct",
+    "erfurt__wind_speed_100m_ms",
+    "erfurt__shortwave_radiation_wm2",
+    "frankfurt__temperature_2m_c",
+    "frankfurt__cloud_cover_pct",
+    "frankfurt__wind_speed_100m_ms",
+    "frankfurt__shortwave_radiation_wm2",
+    "freiburg__temperature_2m_c",
+    "freiburg__cloud_cover_pct",
+    "freiburg__wind_speed_100m_ms",
+    "freiburg__shortwave_radiation_wm2",
+    "hamburg__temperature_2m_c",
+    "hamburg__cloud_cover_pct",
+    "hamburg__wind_speed_100m_ms",
+    "hamburg__shortwave_radiation_wm2",
+    "hannover__temperature_2m_c",
+    "hannover__cloud_cover_pct",
+    "hannover__wind_speed_100m_ms",
+    "hannover__shortwave_radiation_wm2",
+    "kiel__temperature_2m_c",
+    "kiel__cloud_cover_pct",
+    "kiel__wind_speed_100m_ms",
+    "kiel__shortwave_radiation_wm2",
+    "koeln__temperature_2m_c",
+    "koeln__cloud_cover_pct",
+    "koeln__wind_speed_100m_ms",
+    "koeln__shortwave_radiation_wm2",
+    "leipzig__temperature_2m_c",
+    "leipzig__cloud_cover_pct",
+    "leipzig__wind_speed_100m_ms",
+    "leipzig__shortwave_radiation_wm2",
+    "magdeburg__temperature_2m_c",
+    "magdeburg__cloud_cover_pct",
+    "magdeburg__wind_speed_100m_ms",
+    "magdeburg__shortwave_radiation_wm2",
+    "mainz__temperature_2m_c",
+    "mainz__cloud_cover_pct",
+    "mainz__wind_speed_100m_ms",
+    "mainz__shortwave_radiation_wm2",
+    "muenchen__temperature_2m_c",
+    "muenchen__cloud_cover_pct",
+    "muenchen__wind_speed_100m_ms",
+    "muenchen__shortwave_radiation_wm2",
+    "muenster__temperature_2m_c",
+    "muenster__cloud_cover_pct",
+    "muenster__wind_speed_100m_ms",
+    "muenster__shortwave_radiation_wm2",
+    "nordsee_offshore__temperature_2m_c",
+    "nordsee_offshore__cloud_cover_pct",
+    "nordsee_offshore__wind_speed_100m_ms",
+    "nordsee_offshore__shortwave_radiation_wm2",
+    "nuernberg__temperature_2m_c",
+    "nuernberg__cloud_cover_pct",
+    "nuernberg__wind_speed_100m_ms",
+    "nuernberg__shortwave_radiation_wm2",
+    "ostsee_offshore__temperature_2m_c",
+    "ostsee_offshore__cloud_cover_pct",
+    "ostsee_offshore__wind_speed_100m_ms",
+    "ostsee_offshore__shortwave_radiation_wm2",
+    "potsdam__temperature_2m_c",
+    "potsdam__cloud_cover_pct",
+    "potsdam__wind_speed_100m_ms",
+    "potsdam__shortwave_radiation_wm2",
+    "rostock__temperature_2m_c",
+    "rostock__cloud_cover_pct",
+    "rostock__wind_speed_100m_ms",
+    "rostock__shortwave_radiation_wm2",
+    "saarbruecken__temperature_2m_c",
+    "saarbruecken__cloud_cover_pct",
+    "saarbruecken__wind_speed_100m_ms",
+    "saarbruecken__shortwave_radiation_wm2",
+    "schwerin__temperature_2m_c",
+    "schwerin__cloud_cover_pct",
+    "schwerin__wind_speed_100m_ms",
+    "schwerin__shortwave_radiation_wm2",
+    "stuttgart__temperature_2m_c",
+    "stuttgart__cloud_cover_pct",
+    "stuttgart__wind_speed_100m_ms",
+    "stuttgart__shortwave_radiation_wm2",
+    "pv_net_mw_reconstructed",
+    "wind_onshore_net_mw_reconstructed",
+    "wind_offshore_net_mw_reconstructed",
+    "biomass_mwh_lag168h",
+    "hydro_mwh_lag168h",
+    "wind_offshore_mwh_lag168h",
+    "wind_onshore_mwh_lag168h",
+    "solar_mwh_lag168h",
+    "other_renewables_mwh_lag168h",
+    "nuclear_mwh_lag168h",
+    "lignite_mwh_lag168h",
+    "hard_coal_mwh_lag168h",
+    "gas_mwh_lag168h",
+    "pumped_storage_mwh_lag168h",
+    "other_conventional_mwh_lag168h",
+    "grid_load_mwh_lag168h",
+    "berlin__sunshine_duration_preceding_hour_s",
+    "bremen__sunshine_duration_preceding_hour_s",
+    "dresden__sunshine_duration_preceding_hour_s",
+    "erfurt__sunshine_duration_preceding_hour_s",
+    "frankfurt__sunshine_duration_preceding_hour_s",
+    "freiburg__sunshine_duration_preceding_hour_s",
+    "hamburg__sunshine_duration_preceding_hour_s",
+    "hannover__sunshine_duration_preceding_hour_s",
+    "kiel__sunshine_duration_preceding_hour_s",
+    "koeln__sunshine_duration_preceding_hour_s",
+    "leipzig__sunshine_duration_preceding_hour_s",
+    "magdeburg__sunshine_duration_preceding_hour_s",
+    "mainz__sunshine_duration_preceding_hour_s",
+    "muenchen__sunshine_duration_preceding_hour_s",
+    "muenster__sunshine_duration_preceding_hour_s",
+    "nordsee_offshore__sunshine_duration_preceding_hour_s",
+    "nuernberg__sunshine_duration_preceding_hour_s",
+    "ostsee_offshore__sunshine_duration_preceding_hour_s",
+    "potsdam__sunshine_duration_preceding_hour_s",
+    "rostock__sunshine_duration_preceding_hour_s",
+    "saarbruecken__sunshine_duration_preceding_hour_s",
+    "schwerin__sunshine_duration_preceding_hour_s",
+    "stuttgart__sunshine_duration_preceding_hour_s"
+  ],
+  "targets": [
+    "target_biomass_share_pct",
+    "target_hydro_share_pct",
+    "target_wind_offshore_share_pct",
+    "target_wind_onshore_share_pct",
+    "target_solar_share_pct",
+    "target_other_renewables_share_pct"
+  ],
+  "results": [
+    {
+      "source": "biomass",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 0.6611358123479895,
+      "rmse": 0.771784494254698,
+      "r2": 0.6042198990998298
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 0.5703288412138362,
+      "rmse": 0.8176778064588639,
+      "r2": 0.6951549612010135
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 0.6304434527109718,
+      "rmse": 0.8350818869857355,
+      "r2": 0.7708812152785982
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 0.4602858213400959,
+      "rmse": 0.6231398521507653,
+      "r2": 0.8051316570758538
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.4999354243164888,
+      "rmse": 0.6658205315567388,
+      "r2": 0.8064912456491166
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.8022712338479397,
+      "rmse": 1.192707295431092,
+      "r2": 0.7114810563413678
+    },
+    {
+      "source": "biomass",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 0.6041519856229529,
+      "rmse": 0.8167706364529532,
+      "r2": 0.8584249662979542
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 0.5094427746621326,
+      "rmse": 0.6261537582608101,
+      "r2": 0.5290838654329597
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 0.5104349209346268,
+      "rmse": 0.6779832382582193,
+      "r2": 0.59470869004277
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 0.40356922358687053,
+      "rmse": 0.5149315419362492,
+      "r2": 0.7638313882827513
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 0.5449219353133072,
+      "rmse": 0.6737792819226767,
+      "r2": 0.7261791226355059
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.607774333685364,
+      "rmse": 0.7961162196486832,
+      "r2": 0.2697185347074458
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.8261858921293431,
+      "rmse": 1.1348239546133665,
+      "r2": 0.38722696744681295
+    },
+    {
+      "source": "hydro",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 0.6191508804908857,
+      "rmse": 0.8257701120174478,
+      "r2": 0.6794694785538331
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 0.7576335040140729,
+      "rmse": 0.9801821017230133,
+      "r2": 0.8165660839914244
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 1.201030309124653,
+      "rmse": 1.6192388303353258,
+      "r2": 0.675469121669444
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 1.0314787453444805,
+      "rmse": 1.391326511972421,
+      "r2": 0.826578600018012
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 1.042565923668812,
+      "rmse": 1.400246292478327,
+      "r2": 0.815702041046485
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.9955335594233936,
+      "rmse": 1.330632647533566,
+      "r2": 0.8226319120091229
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 1.3206113172222491,
+      "rmse": 1.7416619521806178,
+      "r2": 0.7503578714720218
+    },
+    {
+      "source": "wind_offshore",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 1.3786515974372195,
+      "rmse": 1.8198205292302971,
+      "r2": 0.7666654518011297
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 1.8220220715699817,
+      "rmse": 2.545273485088245,
+      "r2": 0.9520408763738926
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 2.0294232796849716,
+      "rmse": 2.754961266105537,
+      "r2": 0.9531018286891851
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 2.1575857547647987,
+      "rmse": 2.9153812491423348,
+      "r2": 0.9545690937445478
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 1.91116827513338,
+      "rmse": 2.5658395009564945,
+      "r2": 0.9572888547660711
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 2.0362042742212716,
+      "rmse": 2.7592743656138983,
+      "r2": 0.961949215966442
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 3.362812691300184,
+      "rmse": 4.539185677890154,
+      "r2": 0.9274492370689484
+    },
+    {
+      "source": "wind_onshore",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 2.729536981648959,
+      "rmse": 3.668393997761667,
+      "r2": 0.9484744616179414
+    },
+    {
+      "source": "solar",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 0.8122819206440697,
+      "rmse": 1.526949993051723,
+      "r2": 0.9790931345099654
+    },
+    {
+      "source": "solar",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 1.049944498174223,
+      "rmse": 2.077195002943535,
+      "r2": 0.9662412107284966
+    },
+    {
+      "source": "solar",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 1.1985058743025585,
+      "rmse": 2.2892942658541275,
+      "r2": 0.9671431183016437
+    },
+    {
+      "source": "solar",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 1.3366273521578549,
+      "rmse": 2.5815658976046207,
+      "r2": 0.9572037880901905
+    },
+    {
+      "source": "solar",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 1.4809565919967753,
+      "rmse": 2.763315422851994,
+      "r2": 0.965575528273167
+    },
+    {
+      "source": "solar",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 2.413649664779555,
+      "rmse": 4.658256770758679,
+      "r2": 0.9289269205842373
+    },
+    {
+      "source": "solar",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 2.0983100133529105,
+      "rmse": 3.9496048209142334,
+      "r2": 0.9584297465855649
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2018,
+      "train_n": 26089,
+      "n": 8568,
+      "mae": 0.05867375685025952,
+      "rmse": 0.07633880059697505,
+      "r2": -0.17221784569075482
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2019,
+      "train_n": 26064,
+      "n": 8760,
+      "mae": 0.0377177238884406,
+      "rmse": 0.04831502849530648,
+      "r2": 0.44554636561238325
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2020,
+      "train_n": 26088,
+      "n": 8784,
+      "mae": 0.03103524186988489,
+      "rmse": 0.04124141812780289,
+      "r2": 0.7045005058701167
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2021,
+      "train_n": 26112,
+      "n": 8760,
+      "mae": 0.039524913069193694,
+      "rmse": 0.04850606959803866,
+      "r2": 0.4932130416637428
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2022,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.02699324671143275,
+      "rmse": 0.03380519320461309,
+      "r2": 0.7183979293778213
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2023,
+      "train_n": 26304,
+      "n": 8760,
+      "mae": 0.0351389906935302,
+      "rmse": 0.046718422912972755,
+      "r2": 0.6095414419005493
+    },
+    {
+      "source": "other_renewables",
+      "validation_year": 2024,
+      "train_n": 26280,
+      "n": 8784,
+      "mae": 0.040553124248704435,
+      "rmse": 0.05043899704645085,
+      "r2": 0.4377817508594678
+    }
+  ],
+  "versions": {
+    "python": "3.9.6",
+    "sklearn": "1.6.1",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3"
+  },
+  "duration_seconds": 105.652853583,
+  "data_version": "stage0_v6_renewable_breakdown",
+  "complete": true
+}

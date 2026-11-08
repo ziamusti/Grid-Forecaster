@@ -136,4 +136,37 @@ with st.expander('Stündliche Werte anzeigen'):
         'Ampel':st.column_config.TextColumn(width='small'),
     })
 
+st.divider()
+BREAKDOWN_COLS=['predicted_wind_onshore','predicted_wind_offshore','predicted_solar',
+                'predicted_biomass','predicted_hydro','predicted_other_renewables']
+if day[BREAKDOWN_COLS].notna().all().all():
+    st.markdown('#### Grünanteil nach Energiequelle')
+    order=['Wind Onshore','Wind Offshore','Solar','Biomasse','Sonstiges']
+    source_colors={'Wind Onshore':'#2a78d6','Wind Offshore':'#eb6834','Solar':'#1baf7a',
+                   'Biomasse':'#eda100','Sonstiges':'#e87ba4'}
+    breakdown=day[['time_utc']].copy()
+    breakdown['hour']=breakdown.time_utc.dt.hour
+    breakdown['Wind Onshore']=day.predicted_wind_onshore
+    breakdown['Wind Offshore']=day.predicted_wind_offshore
+    breakdown['Solar']=day.predicted_solar
+    breakdown['Biomasse']=day.predicted_biomass
+    breakdown['Sonstiges']=day.predicted_hydro+day.predicted_other_renewables
+    long=breakdown.melt(id_vars='hour',value_vars=order,var_name='Quelle',value_name='Anteil')
+    rank={name:i for i,name in enumerate(order)}
+    long['rank']=long.Quelle.map(rank)
+    breakdown_chart=alt.Chart(long).mark_area().encode(
+        x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+        y=alt.Y('Anteil:Q',title='Anteil an der Erzeugung (%)',stack='zero'),
+        order=alt.Order('rank:Q',sort='ascending'),
+        color=alt.Color('Quelle:N',sort=order,
+            scale=alt.Scale(domain=order,range=[source_colors[k] for k in order]),
+            legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
+        ).properties(height=380)
+    st.altair_chart(breakdown_chart,use_container_width=True)
+    st.caption('Wasserkraft und Sonstige Erneuerbare sind zu "Sonstiges" zusammengefasst — ihre '
+               'Einzelmodelle sagen noch nicht zuverlässig genug vorher (fehlende Niederschlagsdaten als Eingabe).')
+else:
+    st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor (nur für historische '
+            'Jahre 2018–2026 verfügbar, noch nicht für die aktuellen operativen Vorhersagen).')
+
 st.caption('Retrospektive Untersuchung mit historischem ERA5-Wetter. Gezeigt werden zeitlich getrennte HistGradientBoosting-Vorhersagen, keine zukünftige Wetterprognose. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')
