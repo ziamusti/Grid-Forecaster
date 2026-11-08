@@ -32,6 +32,16 @@ def latest(glob_root: Path) -> Path:
     if not candidates:
         raise FileNotFoundError(f'Kein Download-Ordner gefunden unter {glob_root}')
     return candidates[-1]
+
+
+def latest_price_dir(root: Path) -> Path:
+    candidates = sorted(p for base in root.glob('data/raw/energycharts_price*') if base.is_dir()
+                        for p in base.glob('*') if p.is_dir())
+    if not candidates:
+        raise FileNotFoundError('Kein Preis-Download-Ordner gefunden unter data/raw/energycharts_price*')
+    return candidates[-1]
+
+
 UTC = timezone.utc
 
 
@@ -105,7 +115,7 @@ def main():
         weather[station] = {t: {k: sliced[k][i] for k in sliced if k != 'time'} for i, t in enumerate(sliced['time'])}
 
     smard_dir = latest(ROOT / 'data/raw/smard_range')
-    price_dirs = [latest(ROOT / 'data/raw/energycharts_price'), latest(ROOT / 'data/raw/energycharts_price_gap')]
+    price_dirs = [latest_price_dir(ROOT)]
     gen, load = load_smard(smard_dir)
     price_series = load_price_series(price_dirs)
     with CAPACITY.open() as f:
