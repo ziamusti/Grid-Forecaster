@@ -23,11 +23,15 @@ from prepare_stage0 import TECH, WEATHER, capacity_reference, daylight, holidays
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = ROOT / 'reports/final_hist_gradient_boosting_price_2015_20261026_v1'
-SMARD_DIR = ROOT / 'data/raw/smard_range/20261105T145126Z'
-CAPACITY = ROOT / 'data/processed/mastr_capacity_20261105/mastr_monthly_reconstructed.csv'
-PRICE_DIRS = [ROOT / 'data/raw/energycharts_price/20261027T203022Z',
-              ROOT / 'data/raw/energycharts_price_gap/20261101T175239Z']
+CAPACITY = ROOT / 'data/live_capacity/mastr_monthly_reconstructed.csv'
 PRICE_FEATURE = 'price_eur_mwh_lag168h'
+
+
+def latest(glob_root: Path) -> Path:
+    candidates = sorted(p for p in glob_root.glob('*') if p.is_dir())
+    if not candidates:
+        raise FileNotFoundError(f'Kein Download-Ordner gefunden unter {glob_root}')
+    return candidates[-1]
 UTC = timezone.utc
 
 
@@ -35,10 +39,10 @@ def sha(p):
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def load_smard():
+def load_smard(smard_dir: Path):
     gen, load = {}, {}
     seen = defaultdict(int)
-    with (SMARD_DIR / 'generation.csv').open(encoding='utf-8-sig', newline='') as f:
+    with (smard_dir / 'generation.csv').open(encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f, delimiter=';')
         mapping = {name: next(k for k in reader.fieldnames if k.startswith(name + ' [MWh]')) for name in TECH}
         for raw in reader:
@@ -48,7 +52,7 @@ def load_smard():
                 row['nuclear'] = 0.0
             gen[t] = row
     seen = defaultdict(int)
-    with (SMARD_DIR / 'load.csv').open(encoding='utf-8-sig', newline='') as f:
+    with (smard_dir / 'load.csv').open(encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f, delimiter=';')
         col = next(k for k in reader.fieldnames if k.startswith('Netzlast [MWh]'))
         for raw in reader:
@@ -57,9 +61,9 @@ def load_smard():
     return gen, load
 
 
-def load_price_series():
+def load_price_series(price_dirs):
     buckets = {}
-    for price_dir in PRICE_DIRS:
+    for price_dir in price_dirs:
         for path in sorted(price_dir.glob('*.json')):
             if path.name == 'manifest.json':
                 continue
@@ -100,8 +104,10 @@ def main():
         assert sliced['time'] == [t.strftime('%Y-%m-%dT%H:%M') for t in times]
         weather[station] = {t: {k: sliced[k][i] for k in sliced if k != 'time'} for i, t in enumerate(sliced['time'])}
 
-    gen, load = load_smard()
-    price_series = load_price_series()
+    smard_dir = latest(ROOT / 'data/raw/smard_range')
+    price_dirs = [latest(ROOT / 'data/raw/energycharts_price'), latest(ROOT / 'data/raw/energycharts_price_gap')]
+    gen, load = load_smard(smard_dir)
+    price_series = load_price_series(price_dirs)
     with CAPACITY.open() as f:
         capacity = {r['reference_date_exclusive']: r for r in csv.DictReader(f)}
 
