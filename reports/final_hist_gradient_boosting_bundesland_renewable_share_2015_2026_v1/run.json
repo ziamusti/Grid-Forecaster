@@ -1,0 +1,88 @@
+{
+  "status": "complete",
+  "purpose": "Final pooled Bundesland model for target_renewable_share_pct",
+  "params": {
+    "loss": "squared_error",
+    "learning_rate": 0.1,
+    "max_iter": 100,
+    "max_leaf_nodes": 31,
+    "max_depth": null,
+    "min_samples_leaf": 20,
+    "l2_regularization": 0.0,
+    "max_bins": 255,
+    "early_stopping": false,
+    "random_state": 42,
+    "categorical_features": null
+  },
+  "training_years": [
+    2022,
+    2023,
+    2024
+  ],
+  "training_n": 420864,
+  "features": [
+    "station1__temperature_2m_c",
+    "station1__cloud_cover_pct",
+    "station1__wind_speed_100m_ms",
+    "station1__shortwave_radiation_wm2",
+    "station1__sunshine_duration_preceding_hour_s",
+    "station2__temperature_2m_c",
+    "station2__cloud_cover_pct",
+    "station2__wind_speed_100m_ms",
+    "station2__shortwave_radiation_wm2",
+    "station2__sunshine_duration_preceding_hour_s",
+    "daylight_hours_approx",
+    "pv_net_mw_reconstructed",
+    "wind_onshore_net_mw_reconstructed",
+    "wind_offshore_net_mw_reconstructed",
+    "is_regional_holiday",
+    "hour_local",
+    "weekday",
+    "month",
+    "bundesland"
+  ],
+  "test_year": 2025,
+  "test_metrics": {
+    "n": 140160,
+    "mae": 7.593740787048982,
+    "rmse": 9.801553444735498,
+    "r2": 0.8717905397297488
+  },
+  "holdout_year": 2026,
+  "holdout_metrics": {
+    "n": 114816,
+    "mae": 8.91155997902472,
+    "rmse": 11.59605976232454,
+    "r2": 0.822011313517699
+  },
+  "data_version": "bundesland_pooled_v1",
+  "pooled": true,
+  "bundeslaender": [
+    "Baden-W\u00fcrttemberg",
+    "Bayern",
+    "Berlin",
+    "Brandenburg",
+    "Bremen",
+    "Hamburg",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+    "Niedersachsen",
+    "Nordrhein-Westfalen",
+    "Rheinland-Pfalz",
+    "Saarland",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Schleswig-Holstein",
+    "Th\u00fcringen"
+  ],
+  "model_sha256": null,
+  "versions": {
+    "python": "3.9.6",
+    "sklearn": "1.6.1",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3"
+  },
+  "caveats": [
+    "Gepooltes Modell: ein gemeinsames Modell fuer alle 16 Bundeslaender, \"bundesland\" als kategoriales Feature, keine 16 separaten Modelle. station2__* ist NaN fuer Bundeslaender mit nur einer Wetterstation (HistGradientBoostingRegressor unterstuetzt fehlende Werte nativ)."
+  ]
+}

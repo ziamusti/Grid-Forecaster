@@ -1,0 +1,182 @@
+{
+  "params": {
+    "loss": "squared_error",
+    "learning_rate": 0.1,
+    "max_iter": 100,
+    "max_leaf_nodes": 31,
+    "max_depth": null,
+    "min_samples_leaf": 20,
+    "l2_regularization": 0.0,
+    "max_bins": 255,
+    "early_stopping": false,
+    "random_state": 42,
+    "categorical_features": null
+  },
+  "folds": [
+    {
+      "train_years": [
+        2015,
+        2016,
+        2017
+      ],
+      "validation_year": 2018
+    },
+    {
+      "train_years": [
+        2016,
+        2017,
+        2018
+      ],
+      "validation_year": 2019
+    },
+    {
+      "train_years": [
+        2017,
+        2018,
+        2019
+      ],
+      "validation_year": 2020
+    },
+    {
+      "train_years": [
+        2018,
+        2019,
+        2020
+      ],
+      "validation_year": 2021
+    },
+    {
+      "train_years": [
+        2019,
+        2020,
+        2021
+      ],
+      "validation_year": 2022
+    },
+    {
+      "train_years": [
+        2020,
+        2021,
+        2022
+      ],
+      "validation_year": 2023
+    },
+    {
+      "train_years": [
+        2021,
+        2022,
+        2023
+      ],
+      "validation_year": 2024
+    }
+  ],
+  "features": [
+    "station1__temperature_2m_c",
+    "station1__cloud_cover_pct",
+    "station1__wind_speed_100m_ms",
+    "station1__shortwave_radiation_wm2",
+    "station1__sunshine_duration_preceding_hour_s",
+    "station2__temperature_2m_c",
+    "station2__cloud_cover_pct",
+    "station2__wind_speed_100m_ms",
+    "station2__shortwave_radiation_wm2",
+    "station2__sunshine_duration_preceding_hour_s",
+    "daylight_hours_approx",
+    "pv_net_mw_reconstructed",
+    "wind_onshore_net_mw_reconstructed",
+    "wind_offshore_net_mw_reconstructed",
+    "is_regional_holiday",
+    "hour_local",
+    "weekday",
+    "month",
+    "bundesland"
+  ],
+  "target": "target_renewable_share_pct",
+  "results": [
+    {
+      "validation_year": 2018,
+      "train_n": 420864,
+      "n": 140160,
+      "mae": 7.757903460668359,
+      "rmse": 10.557301981987337,
+      "r2": 0.8476943991487449
+    },
+    {
+      "validation_year": 2019,
+      "train_n": 420864,
+      "n": 140160,
+      "mae": 6.3755825920841565,
+      "rmse": 8.603594659726559,
+      "r2": 0.9004403557450114
+    },
+    {
+      "validation_year": 2020,
+      "train_n": 420480,
+      "n": 140544,
+      "mae": 8.487560661003537,
+      "rmse": 11.026669857657765,
+      "r2": 0.8233440628863737
+    },
+    {
+      "validation_year": 2021,
+      "train_n": 420864,
+      "n": 140160,
+      "mae": 8.010390900569957,
+      "rmse": 10.398335795620644,
+      "r2": 0.835879825646558
+    },
+    {
+      "validation_year": 2022,
+      "train_n": 420864,
+      "n": 140160,
+      "mae": 9.007312524559548,
+      "rmse": 11.593189324440006,
+      "r2": 0.8191713852050289
+    },
+    {
+      "validation_year": 2023,
+      "train_n": 420864,
+      "n": 140160,
+      "mae": 9.296066633612611,
+      "rmse": 12.233645192087424,
+      "r2": 0.802150082603575
+    },
+    {
+      "validation_year": 2024,
+      "train_n": 420480,
+      "n": 140544,
+      "mae": 8.111868295390886,
+      "rmse": 10.382298028407659,
+      "r2": 0.8549159429761684
+    }
+  ],
+  "script_sha256": null,
+  "versions": {
+    "python": "3.9.6",
+    "sklearn": "1.6.1",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3"
+  },
+  "duration_seconds": 136.929191667,
+  "data_version": "bundesland_pooled_v1",
+  "pooled": true,
+  "bundeslaender": [
+    "Baden-W\u00fcrttemberg",
+    "Bayern",
+    "Berlin",
+    "Brandenburg",
+    "Bremen",
+    "Hamburg",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+    "Niedersachsen",
+    "Nordrhein-Westfalen",
+    "Rheinland-Pfalz",
+    "Saarland",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Schleswig-Holstein",
+    "Th\u00fcringen"
+  ],
+  "complete": true
+}
