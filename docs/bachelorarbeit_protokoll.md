@@ -2796,3 +2796,8 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   wegen kleinerer Werte/Streuung, nicht zwingend besseres Modell. Beide
   Zielgrößen sind etwa gleich gut vorhersagbar. Kein Bootstrap gerechnet,
   da unterschiedliche Zielgrößen.
+- **Diagramme (ausgeführt):** `scripts/plot_co2_target_comparison.py` →
+  `reports/co2_target_comparison_expanding_v1` (`targets_daily_2025.png`:
+  echte Tagesmittel beider Zielgrößen 2025; `r2_per_year.png`;
+  `relative_mae_per_year.png`; `metrics_per_year.csv`). Relativer Fehler
+  beim Selbst-CO2 in 6 von 9 Testjahren kleiner (2020 und 2024 größer).
