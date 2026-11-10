@@ -2855,3 +2855,17 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Zusammenhänge falsch. Die Ursache des Kohle-Gas-Wechsels (gestiegener
   CO2-Zertifikatspreis, niedrige Gaspreise) ist nicht in unseren Daten
   enthalten und muss mit Quellen belegt werden; nicht selbst geprüft.
+- **Quellen für die Ursache (geprüft, 10.11.2026, Originaltext gelesen):**
+  - UBA, Pressemitteilung Nr. 11/2020 vom 16.03.2020 „Treibhausgasemissionen
+    gingen 2019 um 6,3 Prozent zurück“: Ursachen Reform des EU-Emissionshandels
+    und niedriger Gaspreis; CO2-Durchschnittspreis 2019 24,65 €/t, „fast doppelt
+    so hoch wie 2018“; Kohlekraftwerke 2019 „häufig teurer“ als Gaskraftwerke.
+    https://www.umweltbundesamt.de/presse/pressemitteilungen/treibhausgasemissionen-gingen-2019-um-63-prozent
+  - Agora Energiewende, Pressemitteilung vom 07.01.2020 „CO2-Preis drückt
+    Treibhausgasemissionen und Kohleverstromung 2019 auf Rekordtiefs“
+    (Jahresauswertung „Die Energiewende im Stromsektor – Stand der Dinge
+    2019“): Steinkohle −31 %, Braunkohle −22 %, Gas +11 % Stromerzeugung.
+    https://www.agora-energiewende.de/fileadmin/Projekte/2019/Jahresauswertung_2019/2020-01-07-PM_Agora-Jahresauswertung_2019.pdf
+  - Unsere SMARD-Werte (selbst berechnet, Jahresmittel der Lag-Spalten) zeigen
+    für Erdgas +29 %, Agora +11 %: unterschiedliche Abgrenzung der Erdgas-
+    Erzeugung (SMARD-Kategorie vs. Agora-Bilanz), nicht weiter geprüft.
