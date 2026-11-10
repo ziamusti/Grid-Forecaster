@@ -2726,3 +2726,54 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   6.391.831 kg-Äquivalent-Summe / 53.482,75 MWh ≈ 119,5 g/kWh; davon fast die
   Hälfte aus "Sonstige Konventionelle" (Faktor 2.000,1 selbst abgeleitet)
   → dieser Faktor ist die größte Unsicherheit der Zielgröße.
+
+## XGBoost mit selbst berechnetem CO2: getrennt vs. Mehrziel (10.11.2026)
+
+- **Auftrag:** Nationales Modell soll CO2 (selbst berechnet), Grünanteil
+  gesamt und die 6 Quellen vorhersagen. Zwei Varianten mit XGBoost 2.1.4:
+  getrennt (8 Modelle) und Mehrziel (`multi_strategy="multi_output_tree"`,
+  1 Modell). CO2 nicht mehr von Electricity Maps.
+- **Ausgeführt:** `scripts/train_xgb_selfco2_expanding.py` (ohne/mit
+  `--multi`) → `reports/xgboost_selfco2_separate_expanding_v1`,
+  `reports/xgboost_selfco2_multi_expanding_v1`. Laufzeit 182 s / 173 s.
+- **Daten:** Eingaben + Grünanteil/Quellen aus `stage0_v6_renewable_breakdown`,
+  CO2 aus `stage0_v5_selfco2`; beide aus `stage0_v4_oct26`, Zeitstempel je
+  Jahr als identisch geprüft. Zeilenfilter: `eligible_both` der Selbst-CO2-
+  Tabelle + Preis + alle 8 Ziele vorhanden. Dadurch 77.112 Teststunden
+  (EM-Läufe: 77.085; leicht andere Zeilen, da Electricity-Maps-Schätzstunden
+  hier nicht mehr wegfallen).
+- **Gleich in beiden Varianten:** 137 Eingaben, Vorverarbeitung, Schema
+  2015-2017 → 2018 … 2015-2025 → 2026 (je Schritt neues Modell), feste
+  XGBoost-Parameter wie im vorigen Lauf, Ziele mit Mittelwert/Std der
+  Trainingsjahre standardisiert und zurückgerechnet.
+- **Ergebnisse gepoolt 2018-2026 (geprüft, MAE / R²):**
+
+  | Ziel | Getrennt | Mehrziel |
+  |---|---|---|
+  | CO2 (g/kWh) | 40,97 / 0,850 | 43,45 / 0,831 |
+  | Grünanteil direkt | 4,28 / 0,906 | 4,47 / 0,897 |
+  | Grünanteil = Summe der Quellen | **3,98 / 0,917** | 4,47 / 0,897 |
+  | Biomasse | 0,596 / 0,819 | 0,613 / 0,804 |
+  | Wasserkraft | 0,545 / 0,678 | 0,532 / 0,700 |
+  | Wind auf See | 1,158 / 0,801 | 1,229 / 0,778 |
+  | Wind an Land | 2,429 / 0,948 | 2,781 / 0,934 |
+  | Solar | 1,602 / 0,964 | 2,164 / 0,948 |
+  | Sonstige Erneuerbare | 0,036 / 0,605 | 0,038 / 0,566 |
+
+- **Bootstrap (Tagesblöcke, 2000×, 95 %, MAE getrennt − Mehrziel):** CO2
+  -2,47 [-2,82; -2,12]; Grünanteil -0,19 [-0,23; -0,16]; alle Quellen
+  getrennt besser außer Wasserkraft (+0,013 [0,008; 0,018], Mehrziel knapp
+  besser). Bottom-up − direkt (getrennt): -0,30 [-0,33; -0,27] → Summe der
+  Quellen trifft den Grünanteil belastbar besser als das direkte Modell.
+- **Summenlücke:** Getrennt: Summe der Quellen weicht im Mittel 2,07
+  %-Punkte (max. 20,2) vom direkt vorhergesagten Grünanteil ab. Mehrziel:
+  Lücke 0. Begründung (selbst hergeleitet, nicht in der Doku geprüft):
+  Blattwerte sind lineare Mittel der Gradienten aller Ziele; da Grünanteil
+  = Summe der Quellen in den Daten, bleibt diese Beziehung in jedem Baum
+  erhalten.
+- **Einordnung/Empfehlung:** Getrennt ist in 7 von 8 Zielen belastbar
+  besser. Empfehlung: getrennte Modelle; Grünanteil als Summe der 6
+  Quellen ausgeben (genauer und automatisch konsistent). CO2-Versatz
+  weiterhin positiv (+12,9 getrennt, +14,2 Mehrziel g/kWh).
+- **Grenzen:** feste Parameter ohne Tuning; Mehrziel-Funktion in XGBoost
+  experimentell.
