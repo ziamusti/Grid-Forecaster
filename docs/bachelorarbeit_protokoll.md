@@ -2709,3 +2709,20 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Tuning könnte sich die Reihenfolge HistGB/XGBoost ändern. Boosting hat
   einen größeren positiven CO2-Versatz als LR (+12,7 vs. +2,5 g/kWh);
   Ursache nicht geprüft.
+
+## Korrektur: Unterschied Electricity Maps vs. selbst berechnetes CO2 (10.11.2026)
+
+- **Frühere Aussage falsch:** In den Abschnitten zum selbst berechneten CO2
+  steht, Electricity Maps sei "verbrauchsbasiert mit Importen/Flow-Tracing".
+  Das stimmt für unsere Daten nicht: `prepare_stage0.py` prüft für jede
+  Stunde `flowTraced = false` und `emissionFactorType = lifecycle`. Die
+  verwendeten Electricity-Maps-Werte sind also **erzeugungsbezogen,
+  Lebenszyklus**.
+- **Richtiger Hauptunterschied:** Electricity Maps = Lebenszyklus-Emissionen
+  (inkl. Vorketten, daher auch Wind/Solar > 0); selbst berechnet = direkte
+  Emissionen (UBA-Faktoren, Erneuerbare/Kernenergie = 0). Beide nur
+  deutsche Erzeugung.
+- **Beispiel (selbst berechnet, aus SMARD 08.06.2025 14-15 Uhr):**
+  6.391.831 kg-Äquivalent-Summe / 53.482,75 MWh ≈ 119,5 g/kWh; davon fast die
+  Hälfte aus "Sonstige Konventionelle" (Faktor 2.000,1 selbst abgeleitet)
+  → dieser Faktor ist die größte Unsicherheit der Zielgröße.
