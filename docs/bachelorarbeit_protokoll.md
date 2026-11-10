@@ -2984,3 +2984,38 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   überein (max. Abweichung 5·10⁻⁷, Rundung). Zeilen je Jahr wie v1
   (z. B. 2025: 140.160); vollständige Ziele + Stufe-2-Eingaben fehlen v. a. in
   den ersten 2 Wochen 2015 (Lag) und in 2026 bei 1.888 Zeilen ohne Ziel.
+
+## Bundesland-Modell neu: Stufe 1 vs. Stufe 2 trainiert (11.11.2026, ausgeführt)
+
+- **Ausgeführt:** `scripts/train_bundesland_xgb_expanding.py --stage 1/2` →
+  `reports/xgboost_bundesland_stage{1,2}_expanding_v1` (Vorhersagedateien je 325 MB, nur lokal, per .gitignore nicht in Git; metrics.csv und run.json in Git). Erster Lauf brach ab
+  (R² mit Division durch 0 bei Ländern ohne Geothermie, Ziel konstant 0);
+  behoben mit der R²-Funktion aus `train_bundesland_stage0.py` (R² leer bei
+  konstantem Ziel), dann neu gerechnet. XGBoost mit 8 Threads (sonst gleiche
+  Parameter wie national; Hist-Verfahren, Ergebnis bis auf Rundung
+  unabhängig von der Thread-Zahl). Laufzeit ca. 2 bzw. 3 Minuten.
+- **Gleiche Zeilen beider Stufen geprüft.** Trainingsstunden (Land×Stunde)
+  wachsen von 415.104 auf 1.535.616.
+- **Gepoolt über alle Länder und Testjahre 2018-2026 (geprüft, MAE / R²):**
+
+  | Ziel | Stufe 1 | Stufe 2 | Diff. MAE S2−S1 [95 %] |
+  |---|---|---|---|
+  | CO2 (g/kWh) | 74,57 / 0,825 | 61,73 / 0,877 | −12,84 [−13,20; −12,51] |
+  | Grünanteil (Summe) | 8,32 / 0,834 | 6,78 / 0,888 | −1,55 [−1,58; −1,51] |
+  | Wind an Land | 4,80 / 0,904 | 4,52 / 0,917 | −0,28 [−0,30; −0,27] |
+  | Solar | 2,95 / 0,906 | 2,30 / 0,941 | −0,64 [−0,66; −0,63] |
+  | Biomasse | 2,56 / 0,743 | 2,26 / 0,790 | −0,31 [−0,32; −0,30] |
+  | Wasser | 1,53 / 0,700 | 0,75 / 0,941 | −0,79 [−0,81; −0,77] |
+  | Sonstige (Geothermie) | 0,005 / 0,930 | 0,014 / 0,582 | +0,009 [0,008; 0,009] |
+
+  Bootstrap: Blöcke = Tag je Land, 2000×, 95 %.
+- **Je Land, Testjahr 2025 (R² CO2 / Grünanteil):** größte Verbesserungen bei
+  Bremen (−1,79 → 0,27 / 0,44 → 0,70), Sachsen (−0,56 → 0,66), Saarland
+  (0,07 → 0,74), Berlin (0,04 → 0,35 / 0,57 → 0,78), Baden-Württemberg
+  (Grün 0,38 → 0,82). Schwach bleiben Berlin, Bremen und
+  Mecklenburg-Vorpommern (Grün 0,58).
+- **Einordnung:** Stufe 2 ist bei 6 von 7 Zielen belastbar besser. Nur
+  Geothermie schlechter (absolut sehr klein, Anteile meist < 0,1 %; Ursache
+  nicht geprüft). Empfehlung: Stufe 2 als neues Bundesland-Modell.
+- **Grenze:** Vergleich zum alten Bundesland-Modell nur grob (anderes
+  Schema, 3 Lernjahre); alt Test 2025 CO2 R² 0,863, neu Stufe 2 0,876.

@@ -40,3 +40,5 @@ reports/runs/*/predictions.csv
 *.save
 *.md
 !docs/bachelorarbeit_protokoll.md
+reports/xgboost_bundesland_stage1_expanding_v1/predictions_*.csv
+reports/xgboost_bundesland_stage2_expanding_v1/predictions_*.csv

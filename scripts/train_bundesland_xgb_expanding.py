@@ -27,7 +27,8 @@ from xgboost import XGBRegressor
 
 from bundesland import BUNDESLAENDER
 from train_hist_expanding import XGB_PARAMS
-from train_linear_expanding import FIRST_YEAR, TEST_YEARS, metrics
+from train_bundesland_stage0 import metrics  # r2 = None for constant targets (e.g. no geothermal in a state)
+from train_linear_expanding import FIRST_YEAR, TEST_YEARS
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data/processed/bundesland_pooled_v2'
