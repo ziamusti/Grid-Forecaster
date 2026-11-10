@@ -2582,3 +2582,48 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   negativ (bis ca. -60 g/kWh), weil die Lineare Regression nicht begrenzt
   ist. Das zeigt den nichtlinearen Zusammenhang, den ein lineares Modell
   nicht abbilden kann.
+
+## Neuer Modellvergleich, Schritt 2: HistGradientBoosting mit wachsendem Trainingszeitraum (10.11.2026)
+
+- **Auftrag:** HistGradientBoosting genau wie die Lineare Regression
+  trainieren, nur CO2 (Electricity Maps) und Grünanteil. Nutzer hat Weg A
+  gewählt: in jedem Schritt ein neues Modell von Null auf allen Jahren ab
+  2015 bis zum Vorjahr; keine Bäume werden zwischen Schritten übernommen.
+  Weg B (Bäume anhängen) verworfen: alte Bäume würden nie korrigiert und das
+  Modell wüchse von Schritt zu Schritt (nicht gleich groß wie im Vergleich).
+- **Entscheidung (Nutzer, vorher):** Modellwahl zuerst nur mit CO2 und
+  Grünanteil; die sechs Quellen später nur mit dem gewählten Verfahren.
+- **Ausgeführt:** `scripts/train_hist_expanding.py` →
+  `reports/hist_gradient_boosting_expanding_v1` (`metrics.csv`,
+  `predictions_2018…2026.csv`, `run.json`). Laufzeit ca. 99 s, 1 Thread.
+- **Gleich wie Lineare Regression:** 137 Eingaben, Zeilenfilter, Vorverarbeitung
+  (StandardScaler + One-Hot, nur auf Trainingsjahren angepasst), Schema
+  2015-2017 → 2018 … 2015-2025 → 2026. Feste Parameter wie in den früheren
+  HistGB-Läufen (100 Bäume, Lernrate 0,1, 31 Blätter, min. 20 je Blatt,
+  random_state 42, kein Early Stopping, kein Tuning).
+- **Geprüft:** Ausgeschlossene Zeilen je Jahr identisch zum LR-Lauf; je
+  Testjahr gleiche Zeitstempel und gleiche Istwerte wie in den
+  LR-Vorhersagedateien; je Modell genau 100 Iterationen.
+- **Ergebnisse (geprüft, R² / MAE; LR zum Vergleich):**
+
+  | Test | CO2 HGB | CO2 LR | Grün HGB | Grün LR |
+  |---|---|---|---|---|
+  | 2018 | 0,875 / 33,6 | 0,411 / 79,9 | 0,922 / 2,88 | 0,836 / 4,41 |
+  | 2019 | 0,606 / 65,6 | 0,043 / 108,9 | 0,854 / 4,29 | 0,708 / 6,34 |
+  | 2020 | 0,810 / 47,2 | 0,779 / 51,1 | 0,895 / 3,91 | 0,863 / 4,64 |
+  | 2021 | 0,848 / 38,4 | 0,807 / 45,1 | 0,915 / 3,40 | 0,865 / 4,55 |
+  | 2022 | 0,794 / 54,1 | 0,831 / 46,0 | 0,904 / 3,78 | 0,852 / 4,80 |
+  | 2023 | 0,857 / 49,6 | 0,775 / 62,9 | 0,784 / 6,71 | 0,786 / 6,79 |
+  | 2024 | 0,883 / 42,4 | 0,796 / 58,0 | 0,902 / 4,43 | 0,813 / 6,36 |
+  | 2025 | 0,876 / 46,5 | 0,812 / 57,7 | 0,921 / 4,34 | 0,821 / 6,83 |
+  | 2026 | 0,917 / 36,6 | 0,774 / 60,9 | 0,932 / 3,97 | 0,809 / 6,85 |
+
+- **Einordnung:** HGB ist in 16 von 18 Fällen besser. Ausnahmen: CO2 2022
+  (LR besser, 0,831 vs. 0,794) und Grünanteil 2023 (praktisch gleich).
+  2019 bleibt auch bei HGB das schwächste CO2-Jahr; Ursache weiter nicht
+  geprüft (Vermutung CO2-Preis/Kohle-Gas-Wechsel). Mögliche Vermutung für
+  2022 (nicht geprüft): Energiekrise mit ungewöhnlichen Preisen.
+- **Grenzen:** Keine Signifikanzprüfung; feste Parameter ohne Tuning; ERA5
+  statt echter Wettervorhersage.
+- **Noch offen:** XGBoost mit demselben Schema; danach Vergleichsdiagramm
+  aller drei Verfahren.
