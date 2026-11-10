@@ -2561,3 +2561,24 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   wachsenden Schema; dabei klären, ob "weitertrainieren" (neue Bäume
   anhängen) oder "neu auf allen bisherigen Jahren trainieren"
   verwendet wird, da das bei Baumverfahren nicht dasselbe ist.
+
+### Diagramme für die Bachelorarbeit (10.11.2026, ausgeführt)
+
+- **Skript:** `scripts/plot_linear_expanding.py`, liest nur
+  `reports/linear_regression_expanding_v1` (kein neues Training).
+- **Ausgabe:** `reports/linear_regression_expanding_plots_v1`:
+  - `co2_{r2,mae,rmse}.png`, `renewable_share_{r2,mae,rmse}.png`:
+    Metrik je Testjahr 2018-2026.
+  - `sources_r2.png`: R² der sechs Quellen je Testjahr. Die y-Achse ist
+    bei -0,5 abgeschnitten; der eine abgeschnittene Wert ("Sonstige
+    Erneuerbare" 2019: -5,2) steht als Zahl am Balken.
+  - `{co2,renewable_share}_year2025.png`: Tagesmittel echt vs.
+    vorhergesagt im Testjahr 2025 (gelernt aus 2015-2024).
+  - `{co2,renewable_share}_scatter2025.png`: stündlich echt vs.
+    vorhergesagt 2025.
+- **Beobachtung aus dem Streudiagramm (geprüft am Bild):** Bei CO2 sagt
+  das Modell bei niedrigen echten Werten (ca. 100-200 g/kWh) zu hohe Werte
+  voraus, bei sehr hohen Werten zu niedrige. Einzelne Vorhersagen sind
+  negativ (bis ca. -60 g/kWh), weil die Lineare Regression nicht begrenzt
+  ist. Das zeigt den nichtlinearen Zusammenhang, den ein lineares Modell
+  nicht abbilden kann.
