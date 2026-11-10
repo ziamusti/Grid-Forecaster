@@ -2492,3 +2492,72 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
      Einzelmodelle 84,9%). Nutzer-Entscheidung: vorerst so lassen,
      spätere Behebung (z.B. Residuum-Konstruktion) selbst vormerken,
      nicht jetzt umsetzen.
+
+## Neuer Modellvergleich, Schritt 1: Lineare Regression mit wachsendem Trainingszeitraum
+
+- **Auftrag:** Modellvergleich für das nationale Modell von vorne:
+  Lineare Regression, HistGradientBoosting und XGBoost mit identischen
+  Daten. Neu: kein festes 3-Jahres-Fenster mehr, sondern ein
+  wachsender Trainingszeitraum ab 2015 ("ein Modell, das weiter
+  lernt"). Zuerst nur die Lineare Regression. Zielgrößen nach
+  Nutzer-Entscheidung: CO2 von Electricity Maps (selbst berechnetes
+  CO2 kommt später), Grünanteil gesamt und die 6 Quellen.
+- **Geplant und so ausgeführt:**
+  - Skript `scripts/train_linear_expanding.py`, Daten
+    `data/processed/stage0_v6_renewable_breakdown`.
+  - 137 Eingaben: 115 Wetter (23 Stationen × 5), 5 Kalender, 3
+    Kapazität, 13 Erzeugung/Netzlast vor 168 h, 1 Day-Ahead-Preis vor
+    168 h. `is_weekend` nicht verwendet (wie bisher).
+  - 8 Ziele, je eine eigene Lineare Regression (gewöhnliche kleinste
+    Quadrate, keine Regularisierung, keine Begrenzung der
+    Vorhersagen auf 0-100 %).
+  - Zeilen: `eligible_both == 1`, Preis vorhanden, alle 8 Ziele und
+    alle 137 Eingaben vorhanden. Pro Jahr ausgeschlossene Zeilen in
+    `run.json`. Dieselben Zeilen sollen HistGB und XGBoost bekommen.
+  - Vorbereitung: StandardScaler für Zahlenwerte, One-Hot (drop first)
+    für Stunde, Wochentag, Monat; jeweils nur auf den Lernjahren
+    angepasst.
+  - Wachsender Zeitraum, 9 Schritte: 2015-2017 → Test 2018, 2015-2018 →
+    2019, …, 2015-2024 → 2025, 2015-2025 → 2026 (bis 26.10.2026). Bei
+    der Linearen Regression ist Neurechnen auf allen bisherigen Jahren
+    mathematisch identisch mit Weitertrainieren.
+- **Geprüft:**
+  - Lernjahre und Stundenzahl je Schritt in `run.json` und
+    `metrics.csv` (von 25.954 Stunden für 2018 bis 95.863 für 2026).
+  - Laufzeitwarnungen ("overflow in matmul") sind ein Fehlalarm der
+    macOS-Rechenbibliothek (Accelerate): Vorhersagen weichen von einer
+    Kontrollrechnung in reinem Python um höchstens 3·10⁻¹³ ab, größter
+    Koeffizient 68.
+  - Summe der 6 Quellen-Vorhersagen = Vorhersage des Gesamt-Grünanteils,
+    maximale Abweichung 0,0 in allen Schritten (folgt aus der
+    Linearität, weil das echte Gesamtziel exakt die Summe der 6
+    Quellen ist).
+- **Ergebnis (R² / MAE):**
+
+  | Testjahr | CO2 (g/kWh) | Grünanteil (%) | Solar | Wind Onshore | Wind Offshore | Biomasse | Wasser | Sonstige |
+  |---|---|---|---|---|---|---|---|---|
+  | 2018 | 0,411 / 79,9 | 0,836 / 4,41 | 0,931 | 0,895 | 0,589 | 0,689 | 0,166 | 0,524 |
+  | 2019 | 0,043 / 108,9 | 0,708 / 6,34 | 0,936 | 0,847 | 0,418 | 0,111 | −0,230 | −5,197 |
+  | 2020 | 0,779 / 51,1 | 0,863 / 4,64 | 0,929 | 0,910 | 0,553 | 0,741 | 0,773 | 0,694 |
+  | 2021 | 0,807 / 45,1 | 0,865 / 4,55 | 0,919 | 0,912 | 0,544 | 0,750 | 0,811 | 0,558 |
+  | 2022 | 0,831 / 46,0 | 0,852 / 4,80 | 0,912 | 0,911 | 0,621 | 0,735 | 0,652 | 0,753 |
+  | 2023 | 0,775 / 62,9 | 0,786 / 6,79 | 0,865 | 0,851 | 0,495 | 0,642 | 0,694 | 0,473 |
+  | 2024 | 0,796 / 58,0 | 0,813 / 6,36 | 0,857 | 0,866 | 0,445 | 0,732 | 0,674 | 0,621 |
+  | 2025 | 0,812 / 57,7 | 0,821 / 6,83 | 0,873 | 0,856 | 0,509 | 0,764 | 0,380 | 0,748 |
+  | 2026 | 0,774 / 60,9 | 0,809 / 6,85 | 0,906 | 0,849 | 0,547 | 0,780 | 0,501 | 0,655 |
+
+  (Bei den Quellen nur R²; MAE in `metrics.csv`.)
+- **Auffällig, noch nicht geklärt:** 2019 sehr schwach (CO2 R² 0,043).
+  Vermutung, nicht geprüft: 2019 stieg der CO2-Zertifikatspreis stark,
+  viel Kohle wurde durch Gas ersetzt; ein linearer Zusammenhang aus
+  2015-2018 passt dann nicht mehr. Das negative R² bei "Sonstige
+  Erneuerbare" 2019 kommt vor allem von der sehr kleinen Streuung
+  dieses Ziels (Werte 0,1-0,6 %), nicht von großen absoluten Fehlern.
+- **Grenzen:** Noch kein Vergleich mit HistGB/XGBoost auf denselben
+  Zeilen und demselben Schema; die alten HistGB-Zahlen (3-Jahres-
+  Fenster) sind wegen anderem Trainingszeitraum nicht direkt
+  vergleichbar.
+- **Noch offen:** HistGradientBoosting und XGBoost mit demselben
+  wachsenden Schema; dabei klären, ob "weitertrainieren" (neue Bäume
+  anhängen) oder "neu auf allen bisherigen Jahren trainieren"
+  verwendet wird, da das bei Baumverfahren nicht dasselbe ist.
