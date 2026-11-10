@@ -106,21 +106,73 @@ def load_live_predictions() -> pd.DataFrame | None:
                                   'predicted_renewable_share_pct':'predicted_renewable'})
 
 
-def load_bundesland_predictions() -> pd.DataFrame | None:
+BUNDESLAND_CO2_DEV = 'hist_gradient_boosting_bundesland_co2_v1'
+BUNDESLAND_CO2_FINAL = 'final_hist_gradient_boosting_bundesland_co2_2015_2026_v1'
+BUNDESLAND_RENEWABLE_DEV = 'hist_gradient_boosting_bundesland_renewable_share_v1'
+BUNDESLAND_RENEWABLE_FINAL = 'final_hist_gradient_boosting_bundesland_renewable_share_2015_2026_v1'
+
+
+def bundesland_co2_path(root: Path, year: int) -> Path:
+    folder = BUNDESLAND_CO2_DEV if year <= 2024 else BUNDESLAND_CO2_FINAL
+    return root/'reports'/folder/f'predictions_{year}.csv'
+
+
+def bundesland_renewable_path(root: Path, year: int) -> Path:
+    folder = BUNDESLAND_RENEWABLE_DEV if year <= 2024 else BUNDESLAND_RENEWABLE_FINAL
+    return root/'reports'/folder/f'predictions_{year}.csv'
+
+
+def load_bundesland_history(root: Path) -> pd.DataFrame:
+    # Pooled model (one model per target, "bundesland" as an input feature),
+    # same dev-fold/final-model split and test years as every other model
+    # here - see train_bundesland_stage0.py / splits.json.
+    pieces=[]
+    for year in range(2018,2027):
+        co2=pd.read_csv(bundesland_co2_path(root,year),
+                         usecols=['target_time_utc','bundesland','actual','hist_gradient_boosting_bundesland_co2'])
+        co2=co2.rename(columns={'actual':'actual_co2','hist_gradient_boosting_bundesland_co2':'predicted_co2'})
+        renewable=pd.read_csv(bundesland_renewable_path(root,year),
+                               usecols=['target_time_utc','bundesland','actual','hist_gradient_boosting_bundesland_renewable_share'])
+        renewable=renewable.rename(columns={'actual':'actual_renewable',
+                                             'hist_gradient_boosting_bundesland_renewable_share':'predicted_renewable'})
+        piece=co2.merge(renewable,on=['target_time_utc','bundesland'],validate='one_to_one')
+        pieces.append(piece)
+    result=pd.concat(pieces,ignore_index=True)
+    # Backtest: real ERA5 history (not a forecast), fills the gap between the
+    # historical build (ends 2026-10-26) and when the live pipeline started
+    # (2026-11-10) - see predict_bundesland_backtest.py.
+    backtest_path=root/'reports/backtest_bundesland_20261027_20261104_v1/predictions.csv'
+    if backtest_path.exists():
+        backtest=pd.read_csv(backtest_path,usecols=['target_time_utc','bundesland','actual_co2_gco2eq_kwh',
+                                                      'actual_renewable_share_pct','predicted_co2_gco2eq_kwh',
+                                                      'predicted_renewable_share_pct'])
+        backtest=backtest.rename(columns={'actual_co2_gco2eq_kwh':'actual_co2','actual_renewable_share_pct':'actual_renewable',
+                                           'predicted_co2_gco2eq_kwh':'predicted_co2','predicted_renewable_share_pct':'predicted_renewable'})
+        backtest=backtest.dropna(subset=['actual_co2','actual_renewable'])
+        result=pd.concat([result,backtest],ignore_index=True)
+    result['time_utc']=pd.to_datetime(result.pop('target_time_utc'),utc=True)
+    result=result.sort_values(['bundesland','time_utc']).drop_duplicates(['bundesland','time_utc'],keep='last').reset_index(drop=True)
+    return result
+
+
+def load_bundesland_predictions(root: Path) -> pd.DataFrame | None:
     # Written daily by the same GitHub Actions job as load_live_predictions(),
     # one extra column (predicted_co2_gco2eq_kwh/predicted_renewable_share_pct
-    # per Bundesland). Pooled model, next few days only - no historical
-    # per-Bundesland data wired into the dashboard (yet).
+    # per Bundesland). Pooled model.
+    history=load_bundesland_history(root)
     try:
-        frame=pd.read_csv(BUNDESLAND_LIVE_URL,
-                           usecols=['target_time_utc','bundesland','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
+        live=pd.read_csv(BUNDESLAND_LIVE_URL,
+                         usecols=['target_time_utc','bundesland','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
     except (URLError, OSError, ValueError):
-        return None
-    if frame.empty:
-        return None
-    frame['time_utc']=pd.to_datetime(frame.pop('target_time_utc'),utc=True)
-    return frame.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
-                                  'predicted_renewable_share_pct':'predicted_renewable'})
+        live=None
+    if live is not None and not live.empty:
+        live['time_utc']=pd.to_datetime(live.pop('target_time_utc'),utc=True)
+        live=live.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
+                                   'predicted_renewable_share_pct':'predicted_renewable'})
+        combined=pd.concat([history,live],ignore_index=True)
+        combined=combined.sort_values(['bundesland','time_utc']).drop_duplicates(['bundesland','time_utc'],keep='last').reset_index(drop=True)
+        return combined
+    return history
 
 
 def category(renewable: float) -> tuple[str,str]:

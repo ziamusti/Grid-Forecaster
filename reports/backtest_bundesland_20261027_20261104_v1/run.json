@@ -1,0 +1,49 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-10T18:03:32.937298+00:00",
+  "hours": 216,
+  "bundeslaender": [
+    "Baden-W\u00fcrttemberg",
+    "Bayern",
+    "Berlin",
+    "Brandenburg",
+    "Bremen",
+    "Hamburg",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+    "Niedersachsen",
+    "Nordrhein-Westfalen",
+    "Rheinland-Pfalz",
+    "Saarland",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Schleswig-Holstein",
+    "Th\u00fcringen"
+  ],
+  "pooled": true,
+  "start_utc": "2026-10-27T00:00:00+00:00",
+  "end_exclusive_utc": "2026-11-05T00:00:00+00:00",
+  "weather_source": "Open-Meteo Archive API (real ERA5 history, not a forecast)",
+  "weather_manifest_sha256": "6246c57001c50f99db5dd344ba8864a20d100626741dd3ee62bb85d741c81f3d",
+  "capacity_source": "data/live_capacity/mastr_monthly_reconstructed_bundesland.csv",
+  "models": {
+    "target_co2_gco2eq_kwh": {
+      "model": "reports/final_hist_gradient_boosting_bundesland_co2_2015_2026_v1/hist_gradient_boosting_bundesland_co2_target_co2_gco2eq_kwh.joblib",
+      "training_end": "2024-12-31T23:00:00Z",
+      "model_sha256": "a28e833e7e565ed0b71dd44b69eacc76faec3c63783406f5298811527a1726c0"
+    },
+    "target_renewable_share_pct": {
+      "model": "reports/final_hist_gradient_boosting_bundesland_renewable_share_2015_2026_v1/hist_gradient_boosting_bundesland_renewable_share_target_renewable_share_pct.joblib",
+      "training_end": "2024-12-31T23:00:00Z",
+      "model_sha256": "adc98d28210bc6995581c0c6d4ea4f0f78de59b5518ce1cfb7fcfb0622390820"
+    }
+  },
+  "operational": false,
+  "retrospective_era5": true,
+  "actual_available_share": 0.7638888888888888,
+  "purpose": "Backtest: fills the gap between the historical dataset (ends 2026-10-26) and the live pipeline (started 2026-11-10) - not a genuine forecast, the model never saw this period during training or evaluation either way",
+  "limitations": [
+    "Gepooltes Modell (ein Modell je Zielgroesse fuer alle 16 Bundeslaender)",
+    "Kapazitaet je Bundesland ist ein periodisch aktualisierter Snapshot"
+  ]
+}

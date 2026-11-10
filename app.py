@@ -32,7 +32,7 @@ def data(source_version='historical-plus-september-through-29-v2'):
 
 @st.cache_data(show_spinner=False,ttl=60)
 def bundesland_data():
-    return load_bundesland_predictions()
+    return load_bundesland_predictions(ROOT)
 
 try:
     frame=data()
@@ -174,19 +174,19 @@ else:
             'Jahre 2018–2026 verfügbar, noch nicht für die aktuellen operativen Vorhersagen).')
 
 st.divider()
-st.markdown('#### Bundesland-Vorhersage (live, gepooltes Modell)')
+st.markdown('#### Bundesland-Vorhersage (gepooltes Modell)')
 bl_frame=bundesland_data()
 if bl_frame is None or bl_frame.empty:
-    st.info('Noch keine Bundesland-Vorhersage verfügbar (wird täglich automatisch erzeugt, nur für die '
-            'jeweils nächsten Tage).')
+    st.info('Noch keine Bundesland-Vorhersage verfügbar.')
 else:
     states=sorted(bl_frame.bundesland.unique())
     chosen_state=st.selectbox('Bundesland',states,index=states.index('Berlin') if 'Berlin' in states else 0)
     bl_day=bl_frame.loc[(bl_frame.bundesland==chosen_state)&(bl_frame.time_utc.dt.date==selected)].copy()
     if bl_day.empty:
-        st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor — das gepoolte '
-                'Bundesland-Modell liefert nur eine Vorhersage für die jeweils nächsten Tage, keine '
-                'historischen Werte.')
+        st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor — historisch '
+                'deckt das Bundesland-Modell 2018–04.11.2026 ab, danach die laufende Live-Vorhersage; '
+                'dazwischen (05.–09.11.2026) ist noch eine Lücke, die geschlossen wird, sobald die '
+                'historischen Wetterdaten für diese Tage verfügbar sind.')
     else:
         bl_day['hour']=bl_day.time_utc.dt.hour
         bl_co2_df=bl_day.assign(reihe='CO₂-Intensität')
