@@ -2966,3 +2966,21 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Modell. Bewertung MAE/R² je Testjahr und je Land, Bootstrap Stufe 2 vs. 1.
 - **Danach:** bessere Stufe final auf allen Daten bis 26.10.2026, Live und
   Dashboard.
+
+## Bundesland-Modell neu: Datenaufbau v2 (11.11.2026, ausgeführt)
+
+- **Ausgeführt:** `scripts/build_bundesland_v2.py` →
+  `data/processed/bundesland_pooled_v2/hourly_2015…2026.csv` +
+  `feature_schema.json` (kein Training).
+- **Ziele je (Stunde, Land)** neu aus den Energy-Charts-Rohdaten: CO2 (UBA-
+  Faktoren wie `compute_bundesland_targets.py`), Anteile Wind an Land, Solar,
+  Biomasse, Wasser (Laufwasser + Speicher), Sonstige (Geothermie); Grünanteil
+  = Summe. Fehlt eine Technik in einem Land ganz → 0; fehlender Einzelwert →
+  leer.
+- **Stufe-2-Eingaben:** nationale Werte t−168 h aus `stage0_v6` (12 Erzeugungs-
+  arten, Netzlast, Preis) und Erzeugung im eigenen Land t−336 h (12
+  Techniken, MW). Stufe-1-Eingaben unverändert aus `bundesland_pooled_v1`.
+- **Geprüft:** CO2 und Grünanteil stimmen mit den bisherigen Bundesland-Zielen
+  überein (max. Abweichung 5·10⁻⁷, Rundung). Zeilen je Jahr wie v1
+  (z. B. 2025: 140.160); vollständige Ziele + Stufe-2-Eingaben fehlen v. a. in
+  den ersten 2 Wochen 2015 (Lag) und in 2026 bei 1.888 Zeilen ohne Ziel.
