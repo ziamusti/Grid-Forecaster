@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'reports/co2_target_comparison_expanding_v1'
 TARGET = 'target_co2_gco2eq_kwh'
 RUNS = {'Electricity Maps (Lebenszyklus)': ('xgboost_expanding_v1', '#2a78d6'),
-        'Selbst berechnet (SMARD + UBA, direkt)': ('xgboost_selfco2_separate_expanding_v1', '#eb6834')}
+        'Selbst berechnet (SMARD + UBA)': ('xgboost_selfco2_separate_expanding_v1', '#eb6834')}
 NOTE = 'XGBoost getrennt; je Testjahr gelernt aus 2015 bis Vorjahr; nur gemeinsame Teststunden'
 
 
