@@ -2777,3 +2777,7 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   weiterhin positiv (+12,9 getrennt, +14,2 Mehrziel g/kWh).
 - **Grenzen:** feste Parameter ohne Tuning; Mehrziel-Funktion in XGBoost
   experimentell.
+- **Diagramme (nur getrennte Modelle, ausgeführt):** `scripts/plot_xgb_selfco2_separate.py`
+  → `reports/xgboost_selfco2_separate_expanding_plots_v1` (R²/MAE/RMSE je
+  Testjahr für CO2 und Grünanteil direkt, R² der 6 Quellen, Jahresverlauf und
+  Streudiagramm 2025). Nur gelesene Ergebnisse, kein Training.
