@@ -2836,3 +2836,22 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   mit Motivation („Warum dieses Vorgehen“), Methodik, 2 Tabellen, 5 Abbildungen
   mit Unterschriften, Modellwahl und Grenzen. Zahlen aus den geprüften
   Ergebnissen oben, keine neuen Berechnungen.
+
+## Warum 2019 bei allen Modellen schwach ist: Datenprüfung (10.11.2026)
+
+- **Ausgeführt:** nur Lesen vorhandener Daten (`stage0_v5_selfco2`, Jahresmittel)
+  und der Vorhersagen `xgboost_selfco2_separate_expanding_v1`; keine Datei erzeugt.
+- **Geprüft (Jahresmittel, selbst berechnet):** CO2 selbst berechnet 2015-2018:
+  494 / 497 / 479 / 469 g/kWh, 2019: **396** (−16 % zum Vorjahr, größter
+  Sprung im ganzen Zeitraum). Braunkohle 14.652 → 11.755 MWh/h (−20 %),
+  Steinkohle 8.108 → 5.505 (−32 %), Erdgas 4.832 → 6.233 (+29 %), Grünanteil
+  37 → 42 %.
+- **Modell 2019 (XGBoost getrennt):** im Mittel **+55,5 g/kWh zu hoch**
+  (2018: +8,6; 2020: +26,6). Monatlicher Versatz steigt von +11 (Januar) auf
+  +70 bis +83 (Juni bis Oktober).
+- **Einordnung:** 2019 lag die CO2-Intensität weit unter allem, was das Modell
+  aus 2015-2018 kannte (Kohle → Gas). Baumverfahren sagen nur Werte im Bereich
+  der Trainingsdaten voraus; die Lineare Regression überträgt die alten
+  Zusammenhänge falsch. Die Ursache des Kohle-Gas-Wechsels (gestiegener
+  CO2-Zertifikatspreis, niedrige Gaspreise) ist nicht in unseren Daten
+  enthalten und muss mit Quellen belegt werden; nicht selbst geprüft.
