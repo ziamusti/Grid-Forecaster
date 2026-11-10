@@ -8,6 +8,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 RUN = ROOT / 'reports/linear_regression_expanding_v1'
 OUT = ROOT / 'reports/linear_regression_expanding_plots_v1'
+METHOD = 'Lineare Regression'
 COLOR = '#2a78d6'
 ACTUAL = '#1f1f1f'
 EXAMPLE_YEAR = 2025
@@ -43,7 +44,7 @@ def plot_metric(table, target, key, cfg):
     ax.set_xticks(x); ax.set_xticklabels(rows.test_year.astype(str), fontsize=9)
     name = {'mae': 'MAE', 'rmse': 'RMSE', 'r2': 'R²'}[key]
     unit = '' if key == 'r2' else f' ({cfg["unit"]})'
-    ax.set_title(f'Lineare Regression – {cfg["label"]}: {name}{unit} je Testjahr', fontsize=12, fontweight='bold', pad=14)
+    ax.set_title(f'{METHOD} – {cfg["label"]}: {name}{unit} je Testjahr', fontsize=12, fontweight='bold', pad=14)
     ax.set_ylim(min(0, vals.min() * 1.2), max(vals) * 1.18)
     for bar, value in zip(bars, vals):
         ax.annotate(f'{value:.3f}' if key == 'r2' else f'{value:.1f}', (bar.get_x() + bar.get_width() / 2, value),
@@ -70,7 +71,7 @@ def plot_sources(table):
         clean(ax)
     for ax in axes[:, 0]:
         ax.set_ylabel('R²')
-    fig.suptitle('Lineare Regression – R² der erneuerbaren Quellen je Testjahr', fontsize=13, fontweight='bold')
+    fig.suptitle(f'{METHOD} – R² der erneuerbaren Quellen je Testjahr', fontsize=13, fontweight='bold')
     fig.text(0.5, 0.01, NOTE, ha='center', fontsize=7.5, color='#555555')
     fig.tight_layout(rect=(0, .03, 1, .95))
     fig.savefig(OUT / 'sources_r2.png', dpi=150)
@@ -86,7 +87,7 @@ def plot_year(pred, target, cfg):
     ax.plot(daily.index, daily[f'predicted_{target}'], color=COLOR, lw=1.6, label='Vorhersage')
     ax.set_ylabel(cfg['unit']); ax.grid(axis='y', color='#e5e5e5', lw=0.6); clean(ax)
     ax.legend(frameon=False, loc='upper right')
-    ax.set_title(f'Lineare Regression – {cfg["label"]} {EXAMPLE_YEAR}: Tagesmittel echt vs. vorhergesagt '
+    ax.set_title(f'{METHOD} – {cfg["label"]} {EXAMPLE_YEAR}: Tagesmittel echt vs. vorhergesagt '
                  f'(gelernt aus 2015-{EXAMPLE_YEAR - 1})', fontsize=12, fontweight='bold')
     fig.tight_layout()
     fig.savefig(OUT / f'{cfg["slug"]}_year{EXAMPLE_YEAR}.png', dpi=150)
@@ -109,7 +110,7 @@ def plot_scatter(pred, target, cfg, row):
     plt.close(fig)
 
 
-def main():
+def main(sources=True):
     if OUT.exists():
         raise SystemExit('Ausgabe existiert bereits; kein Ueberschreiben.')
     OUT.mkdir(parents=True)
@@ -121,7 +122,8 @@ def main():
         plot_year(pred, target, cfg)
         row = table[(table.target == target) & (table.test_year == EXAMPLE_YEAR)].iloc[0]
         plot_scatter(pred, target, cfg, row)
-    plot_sources(table)
+    if sources:
+        plot_sources(table)
     for path in sorted(OUT.glob('*.png')):
         print(path)
 

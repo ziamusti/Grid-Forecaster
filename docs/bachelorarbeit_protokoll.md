@@ -2627,3 +2627,12 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   statt echter Wettervorhersage.
 - **Noch offen:** XGBoost mit demselben Schema; danach Vergleichsdiagramm
   aller drei Verfahren.
+
+### Diagramme HistGB (10.11.2026, ausgeführt)
+
+- `scripts/plot_linear_expanding.py` um Verfahrensnamen (`METHOD`) und
+  Schalter für das Quellen-Diagramm erweitert (LR-Ausgabe unverändert);
+  neues `scripts/plot_hist_expanding.py` nutzt dieselben Funktionen.
+- Ausgabe `reports/hist_gradient_boosting_expanding_plots_v1`: R²/MAE/RMSE je
+  Testjahr, Jahresverlauf 2025, Streudiagramm 2025 (CO2 und Grünanteil;
+  keine Quellen, da nicht trainiert). Nur gelesene Ergebnisse, kein Training.
