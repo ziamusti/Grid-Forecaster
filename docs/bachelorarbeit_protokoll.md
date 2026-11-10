@@ -2869,3 +2869,23 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   - Unsere SMARD-Werte (selbst berechnet, Jahresmittel der Lag-Spalten) zeigen
     für Erdgas +29 %, Agora +11 %: unterschiedliche Abgrenzung der Erdgas-
     Erzeugung (SMARD-Kategorie vs. Agora-Bilanz), nicht weiter geprüft.
+
+### Rückfragen zum Abschnitt XGBoost getrennt vs. Mehrziel geprüft (10.11.2026)
+
+- **Bootstrap fehlende Zeilen (geprüft, aus `metrics_pooled_and_bootstrap.csv`):**
+  Wind auf See −0,072 [−0,081; −0,062], Biomasse −0,017 [−0,023; −0,011],
+  Sonstige Erneuerbare −0,0018 [−0,0022; −0,0014]. Kein Intervall enthält 0;
+  „7 von 8 belastbar“ bleibt richtig.
+- **Summe Mehrziel (nachgerechnet):** größte Abweichung Summe der Quellen vs.
+  Grünanteil über alle Teststunden 4,8·10⁻⁵ %-Punkte (Rechengenauigkeit,
+  XGBoost rechnet mit 32-Bit-Zahlen); in den Daten selbst max. 2,6·10⁻⁶.
+  Frühere Aussage „exakt 0“ beruhte auf Rundung; richtig: „bis auf
+  Rechengenauigkeit“.
+- **77.112 vs. 77.085 Teststunden (geprüft):** Ursache ist NICHT ein Fehlen
+  beim Selbst-CO2, sondern umgekehrt: Im Electricity-Maps-Lauf fielen
+  Stunden weg, die Electricity Maps als geschätzt markiert (2018: 3 Stunden
+  mehr ausgeschlossen, 2023: 24 Stunden). 27 Stunden Unterschied.
+- **Einheit:** Selbst-CO2 enthält nur CO2 → Einheit in den Diagrammen von
+  `plot_xgb_selfco2_separate.py` und `plot_xgb_selfco2_multi.py` auf gCO₂/kWh
+  geändert, beide Ordner neu erzeugt. Word-Entwurf neu erzeugt (Einheit,
+  vollständige Bootstrap-Tabelle, Formulierung Summe).
