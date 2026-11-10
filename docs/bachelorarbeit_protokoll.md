@@ -2641,3 +2641,36 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   100). CO2 2025 im Mittel **+32,9 g/kWh zu hoch** (systematischer Versatz,
   auch im Streudiagramm sichtbar). Vermutung, nicht geprüft: Bäume können
   den fallenden CO2-Trend nicht über die Trainingswerte hinaus fortschreiben.
+
+## Neuer Modellvergleich, Schritt 3: XGBoost mit wachsendem Trainingszeitraum (10.11.2026)
+
+- **Auftrag:** XGBoost mit genau denselben Daten und demselben Schema wie
+  HistGB (Weg A, nur CO2 und Grünanteil).
+- **Ausgeführt:** `scripts/train_hist_expanding.py` um Schalter `--xgboost`
+  erweitert (HistGB-Pfad unverändert) → `reports/xgboost_expanding_v1`.
+  Laufzeit ca. 46 s, 1 Thread. Diagramme: `scripts/plot_xgb_expanding.py` →
+  `reports/xgboost_expanding_plots_v1`.
+- **Parameter (fest, wie im früheren XGBoost-Vergleich):** 100 Bäume,
+  Lernrate 0,1, max. Tiefe 6, min_child_weight 1, reg_lambda 1, kein
+  Subsampling, tree_method hist, max_bin 255, random_state 42, kein Early
+  Stopping, kein Tuning. Gleiche Vorverarbeitung wie LR/HistGB.
+- **Geprüft:** gleiche ausgeschlossene Zeilen, Zeitstempel und Istwerte wie
+  im LR-Lauf; je Modell genau 100 Runden.
+- **Ergebnisse (geprüft, R² / MAE):**
+
+  | Test | Train | CO2 | Grünanteil |
+  |---|---|---|---|
+  | 2018 | 2015-2017 | 0,874 / 33,3 | 0,918 / 2,89 |
+  | 2019 | 2015-2018 | 0,594 / 66,3 | 0,848 / 4,39 |
+  | 2020 | 2015-2019 | 0,810 / 46,8 | 0,894 / 3,95 |
+  | 2021 | 2015-2020 | 0,839 / 39,3 | 0,910 / 3,50 |
+  | 2022 | 2015-2021 | 0,798 / 53,4 | 0,904 / 3,77 |
+  | 2023 | 2015-2022 | 0,861 / 48,9 | 0,776 / 6,82 |
+  | 2024 | 2015-2023 | 0,881 / 42,5 | 0,891 / 4,63 |
+  | 2025 | 2015-2024 | 0,871 / 47,0 | 0,914 / 4,50 |
+  | 2026 | 2015-2025 | 0,914 / 37,1 | 0,927 / 4,08 |
+
+- **Geprüft (selbst berechnet, 2025):** keine negativen CO2-Vorhersagen
+  (min. 106,6), Grünanteil 16,7-90,7 %. CO2 2025 im Mittel +33,8 g/kWh zu
+  hoch (ähnlich HistGB).
+- **Noch offen (Nutzer: Vergleich später):** Vergleich LR/HistGB/XGBoost.
