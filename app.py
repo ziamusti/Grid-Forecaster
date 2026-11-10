@@ -89,7 +89,8 @@ chart_df=day[['time_utc','predicted_co2','predicted_renewable']].copy()
 chart_df['hour']=chart_df.time_utc.dt.hour
 co2_df=chart_df.assign(reihe='CO₂-Intensität')
 renew_df=chart_df.assign(reihe='Grünanteil')
-start=best['start'].hour;end=best['end_exclusive'].hour
+# end_exclusive.hour would be 0 for a window ending at midnight, so use start+duration.
+start=best['start'].hour;end=start+duration
 
 nearest=alt.selection_point(nearest=True,on='pointerover',fields=['hour'],empty=False)
 window_rect=alt.Chart(pd.DataFrame({'start':[start],'end':[end]})).mark_rect(
@@ -100,7 +101,7 @@ window_label=alt.Chart(pd.DataFrame({'mid':[(start+end)/2],'predicted_co2':[wind
     ).encode(x='mid:Q',y=alt.Y('predicted_co2:Q',scale=alt.Scale(zero=False),axis=None),
              text=alt.value('Bestes Zeitfenster'))
 co2_line=alt.Chart(co2_df).mark_line(strokeWidth=2.2).encode(
-    x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+    x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,25,2))),scale=alt.Scale(domain=[0,24])),
     y=alt.Y('predicted_co2:Q',title='gCO₂/kWh',scale=alt.Scale(zero=False),
             axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
     color=alt.Color('reihe:N',scale=color_scale,legend=legend))

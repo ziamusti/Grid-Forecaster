@@ -2938,3 +2938,8 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   (selbst berechnet): MAE Solar 1,6025 → 1,5990, Grünanteil (Summe)
   3,9797 → 3,9793; also leicht besser. Ergebnisse der Arbeit bleiben die
   ungeschnittenen Werte aus dem Test.
+- **Fehler Dashboard (11.11.2026, behoben):** Endete das beste Zeitfenster um
+  Mitternacht (z. B. 21-24 Uhr), war `end_exclusive.hour` = 0 → grüne Fläche
+  von 0 bis 21 Uhr (verkehrt). Jetzt Ende = Start + Jobdauer, x-Achse 0-24.
+  Fehler betraf nur die Darstellung, nicht die Berechnung des Fensters.
+  AppTest ohne Fehler (12.11.2026, 15.06.2025 mit 3 und 6 Stunden).
