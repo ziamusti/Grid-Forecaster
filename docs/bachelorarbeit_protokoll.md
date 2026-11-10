@@ -2943,3 +2943,26 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   von 0 bis 21 Uhr (verkehrt). Jetzt Ende = Start + Jobdauer, x-Achse 0-24.
   Fehler betraf nur die Darstellung, nicht die Berechnung des Fensters.
   AppTest ohne Fehler (12.11.2026, 15.06.2025 mit 3 und 6 Stunden).
+
+## Bundesland-Modell neu: Plan (11.11.2026, GEPLANT, noch nicht ausgeführt)
+
+- **Entscheidung Nutzer:** Bundesland-Modell wie das nationale Hauptmodell neu
+  aufsetzen, in zwei Stufen.
+- **Modell:** XGBoost 2.1.4, getrennte Modelle je Ziel, gepoolt über alle 16
+  Länder (Bundesland als Merkmal), feste Parameter wie national.
+- **Ziele je Land und Stunde (aus Energy-Charts-Erzeugung je Land):**
+  CO2 (selbst berechnet, UBA-Faktoren), Anteile Wind an Land, Solar,
+  Biomasse, Wasser (Laufwasser + Speicher), Sonstige (Geothermie);
+  Grünanteil = Summe der 5 Quellen. Wind auf See nicht möglich (Energy-Charts
+  weist ihn nur für Nord-/Ostsee aus, keinem Land zugeordnet; geprüft).
+- **Stufe 1 (19 Eingaben):** Wetter (1-2 Stationen, je 5), installierte
+  Leistung je Land (3), Kalender/Land (Stunde, Wochentag, Monat, Feiertag,
+  Tageslänge, Bundesland) = Eingaben des alten Bundesland-Modells.
+- **Stufe 2 (45 Eingaben):** Stufe 1 + Deutschland vor 7 Tagen (12
+  Erzeugungsarten, Netzlast, Preis) + Erzeugung im eigenen Land vor 14 Tagen
+  (12 Energieträger). 14 Tage, weil Energy-Charts je Land erst nach ca.
+  6 Tagen veröffentlicht; 7 Tage wären live nicht sicher verfügbar.
+- **Schema:** wachsender Zeitraum ab 2015, Test 2018-2026, je Schritt neues
+  Modell. Bewertung MAE/R² je Testjahr und je Land, Bootstrap Stufe 2 vs. 1.
+- **Danach:** bessere Stufe final auf allen Daten bis 26.10.2026, Live und
+  Dashboard.
