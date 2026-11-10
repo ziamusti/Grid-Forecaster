@@ -1,0 +1,27 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-10T18:16:07.265272+00:00",
+  "hours": 216,
+  "target_start_utc": "2026-10-27T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-05T00:00:00+00:00",
+  "model_training_end": "2026-10-26 23:00:00+00:00",
+  "model_sha256": "d5090aa616f381a6d04163eaad2b419e2fad42a9afff3cdb06fdf4c9aa8a5c45",
+  "weather_source": "Open-Meteo Archive API (real ERA5 history, not a forecast)",
+  "weather_manifest_sha256": "eeba13bb524e60c2239ed90441fe5b646c23f03a7a3a2023a7765d10164a8c0c",
+  "operational": false,
+  "retrospective_era5": true,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "purpose": "Backtest: fills the gap between the historical dataset (ends 2026-10-26) and the live pipeline (started 2026-11-10) - not a genuine forecast, the model never saw this period during training or evaluation either way",
+  "limitations": [
+    "Real ERA5 history, not a forecast issued in advance",
+    "SMARD/price lag inputs are fresh current-snapshot revisions, not as-issued history",
+    "Only CO2 predicted here; renewable share added separately by predict_renewable_forecast.py"
+  ],
+  "renewable_share_added": {
+    "model": "reports/final_hist_gradient_boosting_2015_2026_v1/hist_gradient_boosting_target_renewable_share_pct.joblib",
+    "model_training_end": "2026-09-23 23:00:00+00:00",
+    "note": "Old non-price model; this forecast day is unseen for it too (training end 2026-09-23)"
+  }
+}

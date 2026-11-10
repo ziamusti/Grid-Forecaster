@@ -64,6 +64,12 @@ def load_predictions(root: Path) -> pd.DataFrame:
          root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
         (root/'reports/forecast_price_20261102_1d_v1/predictions.csv', None),
         (root/'reports/forecast_price_20261105_3d_v1/predictions.csv', None),
+        # Backtest: real ERA5 history (not a forecast), fills the gap between
+        # the historical build and the 2026-11-10 live-pipeline start - see
+        # predict_price_backtest.py. Listed last, so drop_duplicates(keep=
+        # 'first') below prefers the genuine operational forecasts above
+        # wherever they overlap (e.g. 2026-11-02).
+        (root/'reports/backtest_price_20261027_20261104_v1/predictions.csv', None),
     ]
     for co2_path,renewable_path in extra_paths:
         if not co2_path.exists():
@@ -79,6 +85,7 @@ def load_predictions(root: Path) -> pd.DataFrame:
         if extra.isna().any().any():
             raise ValueError('Neue Vorhersagedatei enthält fehlende Werte')
         result=pd.concat([result,extra],ignore_index=True)
+    result=result.drop_duplicates('target_time_utc',keep='first')
     live=load_live_predictions()
     if live is not None:
         result=pd.concat([result,live],ignore_index=True)
