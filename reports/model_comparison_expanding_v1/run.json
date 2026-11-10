@@ -1,0 +1,25 @@
+{
+  "inputs": {
+    "Lineare Regression": "reports/linear_regression_expanding_v1",
+    "HistGradientBoosting": "reports/hist_gradient_boosting_expanding_v1",
+    "XGBoost": "reports/xgboost_expanding_v1"
+  },
+  "test_years": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "bootstrap": {
+    "resamples": 2000,
+    "block": "UTC day",
+    "seed": 42,
+    "interval": "95% percentile"
+  },
+  "note": "Nur Auswertung vorhandener Vorhersagen, kein Training."
+}

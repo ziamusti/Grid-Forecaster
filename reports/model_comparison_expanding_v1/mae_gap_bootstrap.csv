@@ -1,0 +1,7 @@
+target,a,b,mae_a_minus_b,ci95_low,ci95_high
+target_co2_gco2eq_kwh,HistGradientBoosting,XGBoost,-0.07119194197000667,-0.31076936146991263,0.1772247610993611
+target_co2_gco2eq_kwh,HistGradientBoosting,Lineare Regression,-17.150328478536302,-18.32288202005339,-16.013647738327094
+target_co2_gco2eq_kwh,XGBoost,Lineare Regression,-17.079136536566295,-18.261426151385596,-15.878868698457937
+target_renewable_share_pct,HistGradientBoosting,XGBoost,-0.09156738031456513,-0.11463725048659683,-0.06740269852946755
+target_renewable_share_pct,HistGradientBoosting,Lineare Regression,-1.5140574857890368,-1.6020761040610103,-1.427871953907937
+target_renewable_share_pct,XGBoost,Lineare Regression,-1.4224901054744716,-1.5176339442066085,-1.3292760094641476

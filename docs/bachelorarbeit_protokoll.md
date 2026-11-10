@@ -2674,3 +2674,38 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   (min. 106,6), Grünanteil 16,7-90,7 %. CO2 2025 im Mittel +33,8 g/kWh zu
   hoch (ähnlich HistGB).
 - **Noch offen (Nutzer: Vergleich später):** Vergleich LR/HistGB/XGBoost.
+
+## Neuer Modellvergleich, Schritt 4: Vergleich LR / HistGB / XGBoost (10.11.2026)
+
+- **Ausgeführt:** `scripts/compare_expanding_models.py` →
+  `reports/model_comparison_expanding_v1` (`metrics_per_year.csv`,
+  `metrics_pooled_2018_2026.csv`, `best_per_year_by_mae.csv`,
+  `mae_gap_bootstrap.csv`, `{co2,renewable_share}_r2_comparison.png`).
+  Nur Auswertung vorhandener Vorhersagen, kein Training.
+- **Geprüft:** Alle drei Verfahren haben dieselben 77.085 Teststunden
+  (2018-26.10.2026) mit identischen Istwerten.
+- **Gepoolt über alle Teststunden 2018-2026 (geprüft, MAE / R² / mittlerer Versatz):**
+
+  | Verfahren | CO2 | Grünanteil |
+  |---|---|---|
+  | Lineare Regression | 63,37 / 0,726 / +2,5 | 5,71 / 0,848 / -0,19 |
+  | HistGradientBoosting | 46,22 / 0,851 / +12,7 | 4,20 / 0,910 / -1,97 |
+  | XGBoost | 46,29 / 0,849 / +13,7 | 4,29 / 0,905 / -2,19 |
+
+- **Beste MAE je Testjahr (9 Jahre):** CO2: HistGB 5, XGBoost 3, LR 1 (2022).
+  Grünanteil: HistGB 8, XGBoost 1.
+- **Unsicherheit (Tages-Block-Bootstrap, 2000 Wiederholungen, 95 %-Intervall
+  der MAE-Differenz):**
+  - HistGB − XGBoost, CO2: -0,07 [-0,31; +0,18] → **kein belastbarer
+    Unterschied** (Intervall enthält 0).
+  - HistGB − XGBoost, Grünanteil: -0,09 [-0,11; -0,07] → HistGB knapp,
+    aber belastbar besser; praktisch sehr klein (0,09 %-Punkte).
+  - Beide Boosting-Verfahren gegenüber LR: CO2 ca. -17 g/kWh, Grünanteil ca.
+    -1,4 bis -1,5 %-Punkte; Intervalle weit von 0 → klar besser.
+- **Einordnung/Empfehlung:** Boosting klar besser als LR. Zwischen HistGB
+  und XGBoost bei CO2 kein Unterschied, beim Grünanteil HistGB minimal besser.
+  Empfehlung HistGB (gleich gut oder knapp besser, eine Bibliothek weniger,
+  bereits im Live-Betrieb). Grenzen: nur feste Parameter ohne Tuning; mit
+  Tuning könnte sich die Reihenfolge HistGB/XGBoost ändern. Boosting hat
+  einen größeren positiven CO2-Versatz als LR (+12,7 vs. +2,5 g/kWh);
+  Ursache nicht geprüft.
