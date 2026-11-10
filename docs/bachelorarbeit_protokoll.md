@@ -2781,3 +2781,18 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   → `reports/xgboost_selfco2_separate_expanding_plots_v1` (R²/MAE/RMSE je
   Testjahr für CO2 und Grünanteil direkt, R² der 6 Quellen, Jahresverlauf und
   Streudiagramm 2025). Nur gelesene Ergebnisse, kein Training.
+
+### Vergleich CO2 Electricity Maps vs. selbst berechnet (XGBoost getrennt, 10.11.2026)
+
+- **Ausgeführt:** nur Auswertung vorhandener Vorhersagen
+  (`xgboost_expanding_v1` vs. `xgboost_selfco2_separate_expanding_v1`) auf den
+  77.085 gemeinsamen Teststunden 2018-2026; kein Training, keine Datei erzeugt.
+- **Zielgrößen selbst (geprüft):** Mittel 425,0 (EM, Lebenszyklus) vs. 395,1
+  g/kWh (selbst, direkt); Streuung 150,4 vs. 134,9; Korrelation 0,990.
+- **Modellgüte gepoolt (geprüft):** EM: MAE 46,29, R² 0,849, Versatz +13,7;
+  selbst: MAE 40,98, R² 0,850, Versatz +12,9. MAE relativ zum Mittel
+  (selbst berechnet): 10,9 % vs. 10,4 %.
+- **Einordnung:** R² praktisch gleich; kleinere MAE beim Selbst-CO2 vor allem
+  wegen kleinerer Werte/Streuung, nicht zwingend besseres Modell. Beide
+  Zielgrößen sind etwa gleich gut vorhersagbar. Kein Bootstrap gerechnet,
+  da unterschiedliche Zielgrößen.
