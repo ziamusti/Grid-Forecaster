@@ -2758,6 +2758,29 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   | Wind auf See | 1,158 / 0,801 | 1,229 / 0,778 |
   | Wind an Land | 2,429 / 0,948 | 2,781 / 0,934 |
   | Solar | 1,602 / 0,964 | 2,164 / 0,948 |
+
+## Electricity-Maps-Rohdatenbeispiel und Methodikquelle geprüft (10.11.2026)
+
+- **Auftrag:** Für den Methodiktext den originalen API-Datensatz vom
+  15.06.2025, 12:00 UTC, und einen offiziellen Methodik-Link angeben.
+- **Geplant:** Vorhandene heruntergeladene JSON-Datei lesen, Felder und Wert
+  mit Tabelle 3.0 abgleichen und die offiziellen Electricity-Maps-Seiten auf
+  Erreichbarkeit und Inhalt prüfen. Keine Datenaufbereitung und kein Training.
+- **Ausgeführt:** In
+  `data/raw/electricitymaps/full_DE_20261020T2100Z/20250606T23.json` den
+  Datensatz `2025-06-15T12:00:00.000Z` gesucht. Die offiziellen Seiten
+  `https://www.electricitymaps.com/data/methodology` und
+  `https://app.electricitymaps.com/docs/concepts/emission-factors` am
+  10.11.2026 geöffnet.
+- **Geprüftes Ergebnis:** Der Rohdatensatz enthält Zone `DE`,
+  `carbonIntensity: 155`, `emissionFactorType: lifecycle`,
+  `flowTraced: false`, `isEstimated: false` und `estimationMethod: null`.
+  Damit stimmt der Tabellenwert. Für die verwendete erzeugungsbezogene
+  Ausprägung wurden Importe und Exporte nicht per Flow-Tracing zugerechnet.
+  Die Methodikseite erläutert unter anderem Flow-Tracing sowie direkte und
+  Lebenszyklus-Emissionsfaktoren; die API-Dokumentation erklärt zusätzlich
+  den Parameter `emissionFactorType`. Keine Code- oder Datenänderung und kein
+  Training ausgeführt.
   | Sonstige Erneuerbare | 0,036 / 0,605 | 0,038 / 0,566 |
 
 - **Bootstrap (Tagesblöcke, 2000×, 95 %, MAE getrennt − Mehrziel):** CO2
@@ -2809,3 +2832,7 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Quellen / Mehrziel, `sources_r2_pooled.png`,
   `metrics_pooled_and_bootstrap.csv`). Zahlen identisch zur Tabelle oben.
   Nur Auswertung, kein Training.
+- **Text für die Arbeit (ausgeführt):** `docs/bachelorarbeit_xgboost_hauptmodell.docx`
+  mit Motivation („Warum dieses Vorgehen“), Methodik, 2 Tabellen, 5 Abbildungen
+  mit Unterschriften, Modellwahl und Grenzen. Zahlen aus den geprüften
+  Ergebnissen oben, keine neuen Berechnungen.
