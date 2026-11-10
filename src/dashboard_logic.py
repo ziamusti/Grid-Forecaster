@@ -28,7 +28,17 @@ def read_main_model_file(path: Path | str) -> pd.DataFrame:
           *[c for c in SOURCE_COLUMNS if c in frame.columns]]
     frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                       'predicted_renewable_share_pct':'predicted_renewable',**SOURCE_COLUMNS})
+    if set(SOURCE_COLUMNS.values()) <= set(frame.columns):
+        clip_sources(frame)
     return frame
+
+
+def clip_sources(frame: pd.DataFrame) -> None:
+    # Trees can return slightly negative shares (mostly solar at night); cut
+    # them off at 0 and keep the renewable share equal to the sum of sources.
+    columns=['predicted_'+s for s in RENEWABLE_SOURCES]
+    frame[columns]=frame[columns].clip(lower=0)
+    frame['predicted_renewable']=frame[columns].sum(axis=1)
 
 
 def load_predictions(root: Path) -> pd.DataFrame:
@@ -40,7 +50,7 @@ def load_predictions(root: Path) -> pd.DataFrame:
                             'actual_renewable':raw.actual_target_renewable_share_pct})
         for source in RENEWABLE_SOURCES:
             piece['predicted_'+source]=raw[f'predicted_target_{source}_share_pct']
-        piece['predicted_renewable']=piece[['predicted_'+s for s in RENEWABLE_SOURCES]].sum(axis=1)
+        clip_sources(piece)
         pieces.append(piece)
     result=pd.concat(pieces,ignore_index=True)
     # Unseen hours after the training end (2026-10-26), predicted by the final

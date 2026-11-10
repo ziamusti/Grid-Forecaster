@@ -4,7 +4,8 @@ Reuses inputs.csv built by predict_price_forecast.py (or predict_price_backtest.
 same 137 inputs (23-location weather, calendar, capacity, 168h lags incl. price).
 Writes into predictions.csv in place:
 - predicted_co2_gco2eq_kwh: self-computed CO2 (direct emissions, gCO2/kWh)
-- predicted_<source>_share_pct for the six renewable sources
+- predicted_<source>_share_pct for the six renewable sources, cut off at 0
+  (trees can return slightly negative shares, mostly solar at night)
 - predicted_renewable_share_pct: sum of the six sources (main output)
 - predicted_renewable_share_direct_pct: the direct renewable-share model, for comparison
 Earlier HistGradientBoosting values in that file are kept under hist_gradient_boosting_* names.
@@ -52,7 +53,7 @@ def main():
             predictions = predictions.rename(columns={old: old.replace('predicted_', 'hist_gradient_boosting_')})
     predictions['predicted_co2_gco2eq_kwh'] = values['target_co2_gco2eq_kwh']
     for source in SOURCES:
-        predictions[f'predicted_{source}_share_pct'] = values[f'target_{source}_share_pct']
+        predictions[f'predicted_{source}_share_pct'] = np.clip(values[f'target_{source}_share_pct'], 0, None)
     predictions['predicted_renewable_share_pct'] = predictions[[f'predicted_{s}_share_pct' for s in SOURCES]].sum(axis=1)
     predictions[MARKER] = values['target_renewable_share_pct']
     predictions.to_csv(forecast_dir / 'predictions.csv', index=False)
@@ -64,6 +65,7 @@ def main():
         model_training_end=bundle['training_end'],
         co2='self-computed (SMARD + UBA factors, direct emissions, gCO2/kWh)',
         renewable_share='sum of the six predicted sources; direct model kept as ' + MARKER,
+        clipping='source shares cut off at 0 before summing',
         previous_hist_gradient_boosting_columns_kept=True)
     manifest_path.write_text(json.dumps(manifest, indent=2))
     print(predictions[['target_time_utc', 'predicted_co2_gco2eq_kwh', 'predicted_renewable_share_pct']].to_string(index=False))

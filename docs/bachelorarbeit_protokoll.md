@@ -2923,3 +2923,18 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
 - **Grenzen/offen:** Bis zum nächsten Workflow-Lauf (23:00 UTC) zeigt die
   Live-Datei noch das alte Modell ohne Quellen. Bundesland-Modell nicht
   umgestellt. MaStR-Kapazität live weiterhin aus dem Snapshot.
+
+### Live-Vorhersage: Starttag und negative Quellenwerte korrigiert (11.11.2026)
+
+- **Problem 1 (geprüft):** Der Workflow läuft um 23:00 UTC und nutzte
+  „heute (UTC)“ als Start → Vorhersage 10.–12.11. statt 11.–13.11. (erster Tag
+  fast vorbei). **Änderung:** Start = morgen (UTC), Variablen `TARGET_DATE`/
+  `TARGET_TAG` einmal gesetzt. Lag-Daten (t−168 h) reichen weiter: späteste
+  benötigte Stunde liegt 3 Tage vor dem Laufdatum, SMARD bis heute geladen.
+- **Problem 2 (geprüft):** Bäume liefern teils leicht negative Quellenanteile
+  (Solar in 13,0 % der Teststunden, Wind auf See 0,1 %). **Änderung:** Quellen
+  in `predict_xgb_forecast.py` und im Dashboard bei 0 abgeschnitten,
+  Grünanteil = Summe der abgeschnittenen Quellen. Wirkung im Test 2018-2026
+  (selbst berechnet): MAE Solar 1,6025 → 1,5990, Grünanteil (Summe)
+  3,9797 → 3,9793; also leicht besser. Ergebnisse der Arbeit bleiben die
+  ungeschnittenen Werte aus dem Test.
