@@ -2636,3 +2636,8 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
 - Ausgabe `reports/hist_gradient_boosting_expanding_plots_v1`: R²/MAE/RMSE je
   Testjahr, Jahresverlauf 2025, Streudiagramm 2025 (CO2 und Grünanteil;
   keine Quellen, da nicht trainiert). Nur gelesene Ergebnisse, kein Training.
+- **Geprüft (selbst berechnet aus predictions_2025.csv):** keine negativen
+  CO2-Vorhersagen (min. 112,7), Grünanteil 17,1-90,6 % (nie unter 0 oder über
+  100). CO2 2025 im Mittel **+32,9 g/kWh zu hoch** (systematischer Versatz,
+  auch im Streudiagramm sichtbar). Vermutung, nicht geprüft: Bäume können
+  den fallenden CO2-Trend nicht über die Trainingswerte hinaus fortschreiben.
