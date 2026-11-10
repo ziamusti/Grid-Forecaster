@@ -27,7 +27,7 @@ st.markdown('<div class="hero"><h1>🌱 Grid Forecaster</h1>'
             unsafe_allow_html=True)
 
 @st.cache_data(show_spinner=False,ttl=60)
-def data(source_version='historical-plus-september-through-29-v2'):
+def data(source_version='xgboost-main-model-v1'):
     return load_predictions(ROOT)
 
 @st.cache_data(show_spinner=False,ttl=60)
@@ -48,15 +48,13 @@ with st.sidebar:
     st.divider()
     st.caption('Ampel-Skala')
     st.markdown('🟢 Grün ≥ 60 % Grünanteil  \n🟡 Gelb 40–<60 %  \n🔴 Rot < 40 %')
-    if selected >= pd.Timestamp('2026-11-05').date():
-        st.divider()
-        st.caption('05.–07.11.2026: 3-Tage-Vorhersage mit aktualisierter MaStR-Kapazität (Stand 05.11.2026) — echte Wettervorhersage statt historischem ERA5-Wetter (CO₂ mit Preis-Merkmal, Trainingsende 26.10.2026). Alle Zeiten in UTC.')
-    elif selected >= pd.Timestamp('2026-11-02').date():
-        st.divider()
-        st.caption('02.11.2026: Erste echte operative Vorhersage — echte Wettervorhersage statt historischem ERA5-Wetter (CO₂ mit Preis-Merkmal, Trainingsende 26.10.2026). Alle Zeiten in UTC.')
-    elif selected >= pd.Timestamp('2026-09-24').date():
-        st.divider()
-        st.caption('24.09.–02.10.2026: Vorhersagen des finalen HistGradientBoosting-Modells (CO₂ mit Preis-Merkmal) mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
+    st.divider()
+    if selected >= pd.Timestamp('2026-10-27').date():
+        st.caption('Ab 27.10.2026: Hauptmodell (XGBoost, Trainingsende 26.10.2026) mit echter Wettervorhersage '
+                   '(27.10.–04.11.2026: nachträglich mit echtem ERA5-Wetter). Alle Zeiten in UTC.')
+    else:
+        st.caption('2018–26.10.2026: Hauptmodell (XGBoost) im Test, jedes Jahr nur aus 2015 bis zum Vorjahr '
+                   'gelernt, mit historischem ERA5-Wetter. Alle Zeiten in UTC.')
 
 day=frame.loc[frame.time_utc.dt.date==selected].copy().reset_index(drop=True)
 if day.empty:
@@ -77,7 +75,7 @@ st.markdown(f'<div class="status" style="background:{color}">{icon} {label}: Bes
             unsafe_allow_html=True)
 c1,c2,c3,c4=st.columns(4)
 c1.metric('Beste Startzeit',f'{best["start"]:%H:%M} UTC')
-c2.metric('Ø CO₂ im Fenster',f'{best["average_co2"]:.0f} gCO₂eq/kWh')
+c2.metric('Ø CO₂ im Fenster',f'{best["average_co2"]:.0f} gCO₂/kWh')
 c3.metric('Ø Grünanteil',f'{best["average_renewable"]:.1f} %')
 c4.metric('Kennzahl −2 bis +2',f'{best["score"]:+.1f}',help='+2 bedeutet innerhalb dieses Tages besonders emissionsarm; −2 besonders emissionsreich.')
 
@@ -103,7 +101,7 @@ window_label=alt.Chart(pd.DataFrame({'mid':[(start+end)/2],'predicted_co2':[wind
              text=alt.value('Bestes Zeitfenster'))
 co2_line=alt.Chart(co2_df).mark_line(strokeWidth=2.2).encode(
     x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
-    y=alt.Y('predicted_co2:Q',title='gCO₂eq/kWh',scale=alt.Scale(zero=False),
+    y=alt.Y('predicted_co2:Q',title='gCO₂/kWh',scale=alt.Scale(zero=False),
             axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
     color=alt.Color('reihe:N',scale=color_scale,legend=legend))
 renew_line=alt.Chart(renew_df).mark_line(strokeWidth=2.2).encode(
@@ -131,9 +129,9 @@ with st.expander('Stündliche Werte anzeigen'):
     table=day[['time_utc','predicted_co2','predicted_renewable','co2_change','score']].copy()
     table['Ampel']=table.predicted_renewable.map(lambda value:ICONS[category(value)[0]])
     table['time_utc']=table.time_utc.dt.strftime('%H:%M')
-    table.columns=['Zeit (UTC)','CO₂ (gCO₂eq/kWh)','Grünanteil (%)','Δ CO₂','Kennzahl','Ampel']
+    table.columns=['Zeit (UTC)','CO₂ (gCO₂/kWh)','Grünanteil (%)','Δ CO₂','Kennzahl','Ampel']
     st.dataframe(table,hide_index=True,width='stretch',column_config={
-        'CO₂ (gCO₂eq/kWh)':st.column_config.NumberColumn(format='%.0f'),
+        'CO₂ (gCO₂/kWh)':st.column_config.NumberColumn(format='%.0f'),
         'Grünanteil (%)':st.column_config.ProgressColumn(format='%.0f %%',min_value=0,max_value=100),
         'Δ CO₂':st.column_config.NumberColumn(format='%+.1f'),
         'Kennzahl':st.column_config.NumberColumn(format='%+d'),
@@ -167,11 +165,10 @@ if day[BREAKDOWN_COLS].notna().all().all():
             legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
         ).properties(height=380)
     st.altair_chart(breakdown_chart,use_container_width=True)
-    st.caption('Wasserkraft und Sonstige Erneuerbare sind zu "Sonstiges" zusammengefasst — ihre '
-               'Einzelmodelle sagen noch nicht zuverlässig genug vorher (fehlende Niederschlagsdaten als Eingabe).')
+    st.caption('Der Grünanteil ist die Summe dieser sechs Quellen-Vorhersagen. Wasserkraft und Sonstige '
+               'Erneuerbare sind zu "Sonstiges" zusammengefasst — sie sind am schwersten vorherzusagen.')
 else:
-    st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor (nur für historische '
-            'Jahre 2018–2026 verfügbar, noch nicht für die aktuellen operativen Vorhersagen).')
+    st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor.')
 
 st.divider()
 st.markdown('#### Bundesland-Vorhersage (gepooltes Modell)')
@@ -218,4 +215,4 @@ else:
                     'Eingabe-Merkmal) — schwächer als das nationale Modell, da je Bundesland nur 1–2 '
                     'Wetterstationen statt 23 einfließen. Separate Modelle je Bundesland noch nicht verglichen.')
 
-st.caption('Retrospektive Untersuchung mit historischem ERA5-Wetter. Gezeigt werden zeitlich getrennte HistGradientBoosting-Vorhersagen, keine zukünftige Wetterprognose. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')
+st.caption('Nationale Werte: Hauptmodell XGBoost (getrennte Modelle), CO₂ selbst berechnet aus SMARD-Erzeugung und UBA-Emissionsfaktoren (direkte Emissionen), Grünanteil als Summe der sechs Quellen. Bundesland-Werte: gepooltes HistGradientBoosting-Modell. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')

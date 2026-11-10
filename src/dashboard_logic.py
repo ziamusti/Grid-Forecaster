@@ -5,83 +5,55 @@ from urllib.error import URLError
 import pandas as pd
 
 
-METHOD = 'hist_gradient_boosting'
 LIVE_PREDICTIONS_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions.csv'
 BUNDESLAND_LIVE_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions_bundesland.csv'
 RENEWABLE_SOURCES = ['wind_onshore', 'wind_offshore', 'solar', 'biomass', 'hydro', 'other_renewables']
-SELF_CO2_DEV = 'hist_gradient_boosting_self_co2_v1'
-SELF_CO2_FINAL = 'final_hist_gradient_boosting_self_co2_2015_20261026_v1'
-BREAKDOWN_DEV = 'hist_gradient_boosting_renewable_breakdown_v1'
-BREAKDOWN_FINAL = 'final_hist_gradient_boosting_renewable_breakdown_2015_20261026_v1'
+# Main model: separate XGBoost models, self-computed CO2 (SMARD + UBA factors),
+# renewable share = sum of the six predicted sources. History 2018-2026 comes
+# from its expanding-window test (each year predicted by a model trained only
+# on 2015..previous year), see docs/bachelorarbeit_protokoll.md.
+MAIN_MODEL_HISTORY = 'xgboost_selfco2_separate_expanding_v1'
+SOURCE_COLUMNS = {f'predicted_{s}_share_pct': f'predicted_{s}' for s in RENEWABLE_SOURCES}
 
 
-def prediction_paths(root: Path, year: int, target: str, price: bool) -> Path:
-    base = 'hist_gradient_boosting_price' if price else 'hist_gradient_boosting'
-    folder = f'{base}_v1' if year <= 2024 else f'{base}_test{year}_v1'
-    return root/'reports'/folder/f'predictions_{year}_{target}.csv'
+def main_model_history_path(root: Path, year: int) -> Path:
+    return root/'reports'/MAIN_MODEL_HISTORY/f'predictions_{year}.csv'
 
 
-def self_co2_path(root: Path, year: int) -> Path:
-    folder = SELF_CO2_DEV if year <= 2024 else SELF_CO2_FINAL
-    return root/'reports'/folder/f'predictions_{year}.csv'
-
-
-def breakdown_path(root: Path, source: str, year: int) -> Path:
-    folder = BREAKDOWN_DEV if year <= 2024 else BREAKDOWN_FINAL
-    return root/'reports'/folder/f'predictions_{source}_{year}.csv'
+def read_main_model_file(path: Path | str) -> pd.DataFrame:
+    # Forecast/backtest folders after predict_xgb_forecast.py and the live
+    # file share these column names; sources are optional (older live files).
+    frame=pd.read_csv(path)
+    keep=['target_time_utc','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct',
+          *[c for c in SOURCE_COLUMNS if c in frame.columns]]
+    frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
+                                      'predicted_renewable_share_pct':'predicted_renewable',**SOURCE_COLUMNS})
+    return frame
 
 
 def load_predictions(root: Path) -> pd.DataFrame:
-    # CO2 uses the self-computed target (SMARD generation mix + UBA emission
-    # factors), replacing the Electricity-Maps-trained model for 2018-2026
-    # (see docs/bachelorarbeit_protokoll.md for the licensing reason and the
-    # methodology). Renewable share stays on the original model (unaffected
-    # by that issue); the per-source breakdown is additional, computed by six
-    # separate models whose predictions sum to that same total by construction.
     pieces=[]
     for year in range(2018,2027):
-        co2=pd.read_csv(self_co2_path(root,year),usecols=['target_time_utc','hist_gradient_boosting_self_co2'])
-        co2=co2.rename(columns={'hist_gradient_boosting_self_co2':'predicted_co2'})
-        renewable=pd.read_csv(prediction_paths(root,year,'target_renewable_share_pct',price=False),
-                               usecols=['target_time_utc','actual',METHOD,'common_scored'])
-        renewable=renewable.loc[renewable.common_scored==1,['target_time_utc','actual',METHOD]]
-        renewable=renewable.rename(columns={'actual':'actual_renewable',METHOD:'predicted_renewable'})
-        piece=co2.merge(renewable,on='target_time_utc',validate='one_to_one')
+        raw=pd.read_csv(main_model_history_path(root,year))
+        piece=pd.DataFrame({'target_time_utc':raw.target_time_utc,
+                            'predicted_co2':raw.predicted_target_co2_gco2eq_kwh,
+                            'actual_renewable':raw.actual_target_renewable_share_pct})
         for source in RENEWABLE_SOURCES:
-            path=breakdown_path(root,source,year)
-            column='hist_gradient_boosting_'+source if year<=2024 else 'prediction'
-            extra=pd.read_csv(path,usecols=['target_time_utc',column])
-            extra=extra.rename(columns={column:'predicted_'+source})
-            piece=piece.merge(extra,on='target_time_utc',how='left',validate='one_to_one')
+            piece['predicted_'+source]=raw[f'predicted_target_{source}_share_pct']
+        piece['predicted_renewable']=piece[['predicted_'+s for s in RENEWABLE_SOURCES]].sum(axis=1)
         pieces.append(piece)
     result=pd.concat(pieces,ignore_index=True)
-    extra_paths = [
-        (root/'reports/hist_prediction_price_20260924_26_v1/predictions.csv',
-         root/'reports/hist_prediction_20260924_26_v1/predictions.csv'),
-        (root/'reports/hist_prediction_price_20260927_29_v1/predictions.csv',
-         root/'reports/hist_prediction_20260927_29_v1/predictions.csv'),
-        (root/'reports/hist_prediction_price_20260930_02_v1/predictions.csv',
-         root/'reports/hist_prediction_20260930_02_v1/predictions.csv'),
-        (root/'reports/forecast_price_20261102_1d_v1/predictions.csv', None),
-        (root/'reports/forecast_price_20261105_3d_v1/predictions.csv', None),
-        # Backtest: real ERA5 history (not a forecast), fills the gap between
-        # the historical build and the 2026-11-10 live-pipeline start - see
-        # predict_price_backtest.py. Listed last, so drop_duplicates(keep=
-        # 'first') below prefers the genuine operational forecasts above
-        # wherever they overlap (e.g. 2026-11-02).
-        (root/'reports/backtest_price_20261027_20261104_v1/predictions.csv', None),
-    ]
-    for co2_path,renewable_path in extra_paths:
-        if not co2_path.exists():
+    # Unseen hours after the training end (2026-10-26), predicted by the final
+    # main model (predict_xgb_forecast.py). The backtest (real ERA5 history,
+    # not a forecast) is listed last, so drop_duplicates(keep='first') prefers
+    # the genuine operational forecasts wherever they overlap (e.g. 2026-11-02).
+    extra_paths=[root/'reports/forecast_price_20261102_1d_v1/predictions.csv',
+                 root/'reports/forecast_price_20261105_3d_v1/predictions.csv',
+                 root/'reports/backtest_price_20261027_20261104_v1/predictions.csv']
+    for path in extra_paths:
+        if not path.exists():
             continue
-        co2_extra=pd.read_csv(co2_path,usecols=['target_time_utc','predicted_co2_gco2eq_kwh'])
-        co2_extra=co2_extra.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2'})
-        if renewable_path is None:
-            renewable_extra=pd.read_csv(co2_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
-        else:
-            renewable_extra=pd.read_csv(renewable_path,usecols=['target_time_utc','predicted_renewable_share_pct'])
-        renewable_extra=renewable_extra.rename(columns={'predicted_renewable_share_pct':'predicted_renewable'})
-        extra=co2_extra.merge(renewable_extra,on='target_time_utc',validate='one_to_one')
+        extra=read_main_model_file(path)
         if extra.isna().any().any():
             raise ValueError('Neue Vorhersagedatei enthält fehlende Werte')
         result=pd.concat([result,extra],ignore_index=True)
@@ -103,14 +75,12 @@ def load_live_predictions() -> pd.DataFrame | None:
     # pushes to this repo. None on any fetch problem, so a stale network or
     # an empty/missing file degrades to the historical data only.
     try:
-        frame=pd.read_csv(LIVE_PREDICTIONS_URL,
-                           usecols=['target_time_utc','predicted_co2_gco2eq_kwh','predicted_renewable_share_pct'])
-    except (URLError, OSError, ValueError):
+        frame=read_main_model_file(LIVE_PREDICTIONS_URL)
+    except (URLError, OSError, ValueError, KeyError):
         return None
     if frame.empty:
         return None
-    return frame.rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
-                                  'predicted_renewable_share_pct':'predicted_renewable'})
+    return frame
 
 
 BUNDESLAND_CO2_DEV = 'hist_gradient_boosting_bundesland_co2_v1'

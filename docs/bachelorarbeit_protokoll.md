@@ -2889,3 +2889,37 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   `plot_xgb_selfco2_separate.py` und `plot_xgb_selfco2_multi.py` auf gCO₂/kWh
   geändert, beide Ordner neu erzeugt. Word-Entwurf neu erzeugt (Einheit,
   vollständige Bootstrap-Tabelle, Formulierung Summe).
+
+## Live-Betrieb auf das Hauptmodell umgestellt (11.11.2026)
+
+- **Auftrag:** Live-Betrieb (tägliche Vorhersage, Dashboard) auf das
+  Hauptmodell der Arbeit umstellen: getrennte XGBoost-Modelle, CO2 selbst
+  berechnet, Grünanteil = Summe der 6 Quellen.
+- **Ausgeführt:**
+  1. `scripts/train_final_xgb_selfco2.py` → `reports/final_xgboost_selfco2_2015_20261026_v1`
+     (`xgboost_selfco2_separate.joblib`, `run.json`): 8 Modelle, gleiche
+     Einstellungen wie im Test, einmal auf allen Daten 2015 bis 26.10.2026
+     (103.200 Stunden, Trainingsende 2026-10-26 23:00 UTC). Kein Testjahr
+     (Güte ist aus dem wachsenden Schema bekannt). Gespeicherte Datei neu
+     geladen und gegen das Modell im Speicher geprüft.
+  2. `scripts/predict_xgb_forecast.py --forecast-dir …`: nutzt die von
+     `predict_price_forecast.py` gebaute `inputs.csv`, schreibt CO2, 6 Quellen,
+     Grünanteil (Summe) und den direkten Grünanteil zum Vergleich; alte
+     HistGB-Werte bleiben als `hist_gradient_boosting_*` erhalten; prüft
+     Trainingsende < erste Zielstunde.
+  3. Nachgerechnet (alle nach dem Trainingsende, also ungesehen):
+     `backtest_price_20261027_20261104_v1`, `forecast_price_20261102_1d_v1`,
+     `forecast_price_20261105_3d_v1`.
+  4. `src/dashboard_logic.py`: Verlauf 2018-26.10.2026 jetzt aus dem
+     wachsenden Test des Hauptmodells (`xgboost_selfco2_separate_expanding_v1`,
+     jedes Jahr nur aus 2015 bis Vorjahr gelernt), danach die drei
+     nachgerechneten Ordner, dann die Live-Datei (Quellen optional).
+     `app.py`: Einheit national gCO₂/kWh, Texte angepasst. Bundesland-Teil
+     unverändert (weiter gepooltes HistGB).
+  5. GitHub-Workflow im Daten-Repo um Schritt „Predict main model (XGBoost)“
+     nach den bisherigen Schritten ergänzt.
+- **Geprüft:** Streamlit-AppTest ohne Fehler für 15.06.2025 und 30.10.2026,
+  Quellen-Aufschlüsselung wird angezeigt; vorhandener Unit-Test grün.
+- **Grenzen/offen:** Bis zum nächsten Workflow-Lauf (23:00 UTC) zeigt die
+  Live-Datei noch das alte Modell ohne Quellen. Bundesland-Modell nicht
+  umgestellt. MaStR-Kapazität live weiterhin aus dem Snapshot.
