@@ -39,3 +39,4 @@ models/
 reports/runs/*/predictions.csv
 *.save
 *.md
+!docs/bachelorarbeit_protokoll.md
