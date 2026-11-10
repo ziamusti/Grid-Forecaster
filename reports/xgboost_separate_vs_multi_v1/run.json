@@ -1,0 +1,14 @@
+{
+  "inputs": [
+    "reports/xgboost_selfco2_separate_expanding_v1",
+    "reports/xgboost_selfco2_multi_expanding_v1"
+  ],
+  "test_hours": 77112,
+  "bootstrap": {
+    "resamples": 2000,
+    "block": "UTC day",
+    "seed": 42,
+    "interval": "95% percentile"
+  },
+  "note": "Nur Auswertung vorhandener Vorhersagen, kein Training."
+}

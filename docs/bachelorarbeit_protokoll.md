@@ -2801,3 +2801,11 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   echte Tagesmittel beider Zielgrößen 2025; `r2_per_year.png`;
   `relative_mae_per_year.png`; `metrics_per_year.csv`). Relativer Fehler
   beim Selbst-CO2 in 7 von 9 Testjahren kleiner (2020 und 2024 größer).
+- **Diagramme Mehrziel + Vergleich (ausgeführt):** `scripts/plot_xgb_selfco2_multi.py`
+  → `reports/xgboost_selfco2_multi_expanding_plots_v1` (gleiche Diagramme wie
+  getrennt). `scripts/compare_xgb_separate_multi.py` →
+  `reports/xgboost_separate_vs_multi_v1` (`co2_r2_per_year.png`,
+  `renewable_share_r2_per_year.png` mit getrennt direkt / getrennt Summe der
+  Quellen / Mehrziel, `sources_r2_pooled.png`,
+  `metrics_pooled_and_bootstrap.csv`). Zahlen identisch zur Tabelle oben.
+  Nur Auswertung, kein Training.
