@@ -30,20 +30,42 @@ def read_main_model_file(path: Path | str) -> pd.DataFrame:
           *[c for c in SOURCE_COLUMNS if c in frame.columns]]
     frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                       'predicted_renewable_share_pct':'predicted_renewable',**SOURCE_COLUMNS})
-    if set(SOURCE_COLUMNS.values()) <= set(frame.columns):
-        # A history file can mix rows with and without sources; only rows with
-        # all sources get clipped and their renewable share recomputed.
-        complete=frame[list(SOURCE_COLUMNS.values())].notna().all(axis=1)
-        part=frame.loc[complete].copy(); clip_sources(part); frame.loc[complete]=part
+    # A history file can mix rows with and without sources (older live files).
+    make_physical(frame,RENEWABLE_SOURCES)
     return frame
 
 
+def make_physical(frame: pd.DataFrame, sources: list[str]) -> None:
+    # Trees can return impossible values: negative shares (mostly solar at
+    # night), source sums above 100 % or negative CO2. Cut shares at 0, scale
+    # them down proportionally if they sum to more than 100 %, keep the
+    # renewable share equal to their sum and CO2 at least 0. Rows without
+    # source columns only get the renewable share and CO2 limited.
+    frame['predicted_co2']=frame['predicted_co2'].clip(lower=0)
+    columns=['predicted_'+s for s in sources]
+    if not set(columns) <= set(frame.columns):
+        frame['predicted_renewable']=frame['predicted_renewable'].clip(0,100)
+        return
+    complete=frame[columns].notna().all(axis=1)
+    shares=frame.loc[complete,columns].clip(lower=0)
+    total=shares.sum(axis=1)
+    shares=shares.mul((100/total).clip(upper=1),axis=0)
+    frame.loc[complete,columns]=shares
+    frame.loc[complete,'predicted_renewable']=shares.sum(axis=1)
+    frame.loc[~complete,'predicted_renewable']=frame.loc[~complete,'predicted_renewable'].clip(0,100)
+
+
 def clip_sources(frame: pd.DataFrame) -> None:
-    # Trees can return slightly negative shares (mostly solar at night); cut
-    # them off at 0 and keep the renewable share equal to the sum of sources.
-    columns=['predicted_'+s for s in RENEWABLE_SOURCES]
-    frame[columns]=frame[columns].clip(lower=0)
-    frame['predicted_renewable']=frame[columns].sum(axis=1)
+    make_physical(frame,RENEWABLE_SOURCES)
+
+
+def prefer_with_sources(frame: pd.DataFrame, keys: list[str], sources: list[str]) -> pd.DataFrame:
+    # One row per hour: a row with all source shares (current main model) wins
+    # over one without (older files); otherwise the later row wins.
+    columns=['predicted_'+s for s in sources]
+    has=frame[columns].notna().all(axis=1) if set(columns) <= set(frame.columns) else pd.Series(False,index=frame.index)
+    frame=frame.assign(_has_sources=has.astype(int)).sort_values('_has_sources',kind='mergesort')
+    return frame.drop_duplicates(keys,keep='last').drop(columns='_has_sources')
 
 
 def load_predictions(root: Path) -> pd.DataFrame:
@@ -57,6 +79,15 @@ def load_predictions(root: Path) -> pd.DataFrame:
             piece['predicted_'+source]=raw[f'predicted_target_{source}_share_pct']
         clip_sources(piece)
         pieces.append(piece)
+    # Hours the test skipped (missing inputs), predicted by the same step model
+    # for the dashboard only (fill_history_gaps.py).
+    gaps=pd.read_csv(root/'reports'/MAIN_MODEL_HISTORY/'gap_fill.csv')
+    gap_piece=pd.DataFrame({'target_time_utc':gaps.target_time_utc,'predicted_co2':gaps.predicted_target_co2_gco2eq_kwh})
+    for source in RENEWABLE_SOURCES:
+        gap_piece['predicted_'+source]=gaps[f'predicted_target_{source}_share_pct']
+    gap_piece['predicted_renewable']=0.0
+    clip_sources(gap_piece)
+    pieces.append(gap_piece)
     result=pd.concat(pieces,ignore_index=True)
     # Unseen hours after the training end (2026-10-26), predicted by the final
     # main model (predict_xgb_forecast.py). The backtest (real ERA5 history,
@@ -76,8 +107,7 @@ def load_predictions(root: Path) -> pd.DataFrame:
     result=result.drop_duplicates('target_time_utc',keep='first')
     live=load_live_predictions()
     if live is not None:
-        result=pd.concat([result,live],ignore_index=True)
-        result=result.drop_duplicates('target_time_utc',keep='last')
+        result=prefer_with_sources(pd.concat([result,live],ignore_index=True),['target_time_utc'],RENEWABLE_SOURCES)
     result['time_utc']=pd.to_datetime(result.pop('target_time_utc'),utc=True)
     result=result.sort_values('time_utc').reset_index(drop=True)
     assert result.time_utc.is_unique
@@ -112,9 +142,7 @@ def bundesland_history_path(root: Path, year: int) -> Path:
 
 
 def clip_bundesland_sources(frame: pd.DataFrame) -> None:
-    columns=['predicted_'+s for s in BUNDESLAND_SOURCES]
-    frame[columns]=frame[columns].clip(lower=0)
-    frame['predicted_renewable']=frame[columns].sum(axis=1)
+    make_physical(frame,BUNDESLAND_SOURCES)
 
 
 def read_bundesland_model_file(path: Path | str) -> pd.DataFrame:
@@ -127,9 +155,7 @@ def read_bundesland_model_file(path: Path | str) -> pd.DataFrame:
           *[c for c in [*sources,*actual] if c in frame.columns]]
     frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                       'predicted_renewable_share_pct':'predicted_renewable',**sources,**actual})
-    if set(sources.values()) <= set(frame.columns):
-        complete=frame[list(sources.values())].notna().all(axis=1)
-        part=frame.loc[complete].copy(); clip_bundesland_sources(part); frame.loc[complete]=part
+    clip_bundesland_sources(frame)
     frame['time_utc']=pd.to_datetime(frame.pop('target_time_utc'),utc=True)
     return frame
 
@@ -141,18 +167,23 @@ def load_bundesland_history(root: Path) -> pd.DataFrame:
         clip_bundesland_sources(piece)
         piece['time_utc']=pd.to_datetime(piece.pop('target_time_utc'),utc=True)
         pieces.append(piece)
+    gaps=pd.read_csv(root/'reports'/BUNDESLAND_HISTORY/'gap_fill.csv.gz')
+    gaps['predicted_renewable']=0.0
+    clip_bundesland_sources(gaps)
+    gaps['time_utc']=pd.to_datetime(gaps.pop('target_time_utc'),utc=True)
+    pieces.append(gaps)
     result=pd.concat(pieces,ignore_index=True)
     # After the training end: backtest 27.10.-04.11. (real ERA5 history, not a
     # forecast) and the forecasts of 05.-07.11. and 08.-10.11. (real weather
     # forecasts saved on those days). Hours without published actuals are kept;
     # the dashboard shows predictions only.
     for folder in ['backtest_bundesland_20261027_20261104_v1','forecast_bundesland_20261105_3d_v1',
-                   'forecast_bundesland_20261108_3d_v1']:
+                   'forecast_bundesland_20261108_3d_v1','forecast_bundesland_20261111_1d_v1']:
         path=root/'reports'/folder/'predictions.csv'
         if path.exists():
             result=pd.concat([result,read_bundesland_model_file(path)],ignore_index=True)
-    result=result.sort_values(['bundesland','time_utc']).drop_duplicates(['bundesland','time_utc'],keep='last').reset_index(drop=True)
-    return result
+    result=prefer_with_sources(result,['bundesland','time_utc'],BUNDESLAND_SOURCES)
+    return result.sort_values(['bundesland','time_utc']).reset_index(drop=True)
 
 
 def load_bundesland_predictions(root: Path) -> pd.DataFrame | None:
@@ -163,9 +194,8 @@ def load_bundesland_predictions(root: Path) -> pd.DataFrame | None:
     except (URLError, OSError, ValueError, KeyError):
         live=None
     if live is not None and not live.empty:
-        combined=pd.concat([history,live],ignore_index=True)
-        combined=combined.sort_values(['bundesland','time_utc']).drop_duplicates(['bundesland','time_utc'],keep='last').reset_index(drop=True)
-        return combined
+        combined=prefer_with_sources(pd.concat([history,live],ignore_index=True),['bundesland','time_utc'],BUNDESLAND_SOURCES)
+        return combined.sort_values(['bundesland','time_utc']).reset_index(drop=True)
     return history
 
 

@@ -3112,3 +3112,32 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
 - **Geprüft:** 25.10.-14.11.2026 jeder Tag 24 Stunden, national und je Land.
   **Grenze:** Länderwerte für 11.11. stammen noch vom alten HistGB-Modell
   (ohne Quellen), da die Bundesland-Live-Datei dieses Laufs noch alt war.
+
+## Vollständige Prüfung des Dashboards und Korrekturen (11.11.2026, ausgeführt)
+
+- **Prüfung (Skript im Scratchpad, nur Lesen):** jede Stunde 2018-01-01 bis
+  14.11.2026, national und je Land: fehlende/doppelte Stunden, fehlende
+  Quellen, Werte außerhalb des möglichen Bereichs, Summe Quellen = Grünanteil.
+- **Gefunden:** (1) Lücken, wo der Test Stunden übersprungen hat (fehlende
+  Eingaben/Istwerte): national 7 Tage 2018, je Land 6 Tage 2018 und
+  27.-31.08./10.-14.09.2026. (2) 10.-11.11. je Land ohne Quellen (altes
+  Modell). (3) Unmögliche Werte: Grünanteil bis 117,6 %, CO2 bis −89 g/kWh
+  (v. a. Schleswig-Holstein, Mecklenburg-Vorpommern). (4) Ursache des
+  fehlenden 11.11.: GitHub startete den 23:00-Lauf erst nach Mitternacht
+  UTC, „morgen“ wurde zum 12.11.
+- **Behoben:** (1) `scripts/fill_history_gaps.py`: für übersprungene Stunden
+  das Schrittmodell des Testjahres identisch neu trainiert (gleiche Zeilen,
+  Parameter) und vorhergesagt, fehlende Eingaben leer gelassen; nur fürs
+  Dashboard, nicht für Kennzahlen (national 192 Stunden, Länder 1.536 + 3.776
+  Zeilen). (2) Länder 11.11. mit Wettervorhersage vom 11.11. 00:47 UTC neu
+  gerechnet (`forecast_price_20261111_1d_v1` nur als nationale Eingabe,
+  `forecast_bundesland_20261111_1d_v1`); Zeilen mit Quellen haben Vorrang
+  vor älteren ohne. (3) Physikalische Grenzen im Dashboard und in beiden
+  Live-Skripten: Quellen ≥ 0, Summe > 100 % anteilig auf 100 % skaliert,
+  CO2 ≥ 0. Wirkung im Ländertest (selbst berechnet): MAE Grünanteil
+  6,774 → 6,767, CO2 61,72 → 61,69; Kennzahlen der Arbeit bleiben die
+  ungeschnittenen Testwerte. (4) Workflow: Start = Datum von „jetzt + 2 h“
+  (UTC), damit verspätete Läufe keinen Tag überspringen.
+- **Erneut geprüft:** alle 17 Reihen 77.760 Stunden, 0 fehlend, 0 doppelt,
+  keine fehlenden Quellen, alle Werte im möglichen Bereich, Summe der
+  Quellen = Grünanteil. AppTest ohne Fehler (09.08.2018, 28.08.2026, 11.11.2026).

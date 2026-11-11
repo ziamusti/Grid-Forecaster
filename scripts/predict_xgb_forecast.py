@@ -54,7 +54,12 @@ def main():
     predictions['predicted_co2_gco2eq_kwh'] = values['target_co2_gco2eq_kwh']
     for source in SOURCES:
         predictions[f'predicted_{source}_share_pct'] = np.clip(values[f'target_{source}_share_pct'], 0, None)
-    predictions['predicted_renewable_share_pct'] = predictions[[f'predicted_{s}_share_pct' for s in SOURCES]].sum(axis=1)
+    # Sources summing to more than 100 % are scaled down proportionally; CO2 at least 0.
+    shares = predictions[[f'predicted_{s}_share_pct' for s in SOURCES]]
+    shares = shares.mul((100 / shares.sum(axis=1)).clip(upper=1), axis=0)
+    predictions[shares.columns] = shares
+    predictions['predicted_renewable_share_pct'] = shares.sum(axis=1)
+    predictions['predicted_co2_gco2eq_kwh'] = np.clip(predictions['predicted_co2_gco2eq_kwh'], 0, None)
     predictions[MARKER] = values['target_renewable_share_pct']
     predictions.to_csv(forecast_dir / 'predictions.csv', index=False)
 
@@ -65,7 +70,7 @@ def main():
         model_training_end=bundle['training_end'],
         co2='self-computed (SMARD + UBA factors, direct emissions, gCO2/kWh)',
         renewable_share='sum of the six predicted sources; direct model kept as ' + MARKER,
-        clipping='source shares cut off at 0 before summing',
+        clipping='source shares cut off at 0, scaled to 100 % if their sum exceeds it; CO2 at least 0',
         previous_hist_gradient_boosting_columns_kept=True)
     manifest_path.write_text(json.dumps(manifest, indent=2))
     print(predictions[['target_time_utc', 'predicted_co2_gco2eq_kwh', 'predicted_renewable_share_pct']].to_string(index=False))
