@@ -3,7 +3,7 @@
   "created_utc": "2026-11-10T18:03:32.937298+00:00",
   "hours": 216,
   "bundeslaender": [
-    "Baden-W\u00fcrttemberg",
+    "Baden-Württemberg",
     "Bayern",
     "Berlin",
     "Brandenburg",
@@ -18,7 +18,7 @@
     "Sachsen",
     "Sachsen-Anhalt",
     "Schleswig-Holstein",
-    "Th\u00fcringen"
+    "Thüringen"
   ],
   "pooled": true,
   "start_utc": "2026-10-27T00:00:00+00:00",
@@ -45,5 +45,17 @@
   "limitations": [
     "Gepooltes Modell (ein Modell je Zielgroesse fuer alle 16 Bundeslaender)",
     "Kapazitaet je Bundesland ist ein periodisch aktualisierter Snapshot"
-  ]
+  ],
+  "main_model_xgboost_bundesland": {
+    "model": "reports/final_xgboost_bundesland_2015_20261026_v1/xgboost_bundesland_stage2.joblib",
+    "model_sha256": "4506acb54cbdab1b386b814b4c46c5d3e179a293f53a22eb7c87c6bb3fa89a20",
+    "model_training_end": "2026-10-26T23:00:00+00:00",
+    "national_inputs": "../reports/backtest_price_20261027_20261104_v1",
+    "state_generation_weeks": [
+      "week_2026_42.json",
+      "week_2026_43.json"
+    ],
+    "renewable_share": "sum of the five predicted sources (cut off at 0)",
+    "previous_hist_gradient_boosting_columns_kept": true
+  }
 }

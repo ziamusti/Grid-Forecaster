@@ -43,11 +43,11 @@ TARGETS = ['target_co2_gco2eq_kwh', *[f'target_{s}_share_pct' for s in SOURCES],
 assert set(sum(SOURCES.values(), [])) == set(RENEWABLE)
 
 
-def load_generation():
+def load_generation(paths=None):
     # Long table: one row per (hour, Bundesland), one column per technology (MW).
     land_of = {v: k for k, v in BUNDESLAND_SUFFIX.items()}
     parts = []
-    for path in sorted(RAW.glob('20*/week_*.json')):
+    for path in sorted(paths if paths is not None else RAW.glob('20*/week_*.json')):
         data = json.loads(path.read_text())
         times = pd.to_datetime(data[0]['xAxisValues'], unit='ms', utc=True)
         by_id = {d['id']: d for d in data}

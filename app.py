@@ -172,7 +172,7 @@ else:
     st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor.')
 
 st.divider()
-st.markdown('#### Bundesland-Vorhersage (gepooltes Modell)')
+st.markdown('#### Bundesland-Vorhersage')
 bl_frame=bundesland_data()
 if bl_frame is None or bl_frame.empty:
     st.info('Noch keine Bundesland-Vorhersage verfügbar.')
@@ -183,8 +183,7 @@ else:
     if bl_day.empty:
         st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor — historisch '
                 'deckt das Bundesland-Modell 2018–04.11.2026 ab, danach die laufende Live-Vorhersage; '
-                'dazwischen (05.–09.11.2026) ist noch eine Lücke, die geschlossen wird, sobald die '
-                'historischen Wetterdaten für diese Tage verfügbar sind.')
+                'dazwischen (05.–09.11.2026) ist noch eine Lücke.')
     else:
         bl_day['hour']=bl_day.time_utc.dt.hour
         bl_co2_df=bl_day.assign(reihe='CO₂-Intensität')
@@ -192,7 +191,7 @@ else:
         bl_nearest=alt.selection_point(nearest=True,on='pointerover',fields=['hour'],empty=False)
         bl_co2_line=alt.Chart(bl_co2_df).mark_line(strokeWidth=2.2).encode(
             x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
-            y=alt.Y('predicted_co2:Q',title='gCO₂eq/kWh',scale=alt.Scale(zero=False),
+            y=alt.Y('predicted_co2:Q',title='gCO₂/kWh',scale=alt.Scale(zero=False),
                     axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
             color=alt.Color('reihe:N',scale=color_scale,legend=legend))
         bl_renew_line=alt.Chart(bl_renew_df).mark_line(strokeWidth=2.2).encode(
@@ -212,8 +211,26 @@ else:
         bl_chart=alt.layer(bl_co2_line,bl_renew_line,bl_selectors,bl_rule,bl_co2_points,bl_renew_points,bl_co2_text,bl_renew_text
             ).resolve_scale(y='independent',color='shared').properties(height=360)
         st.altair_chart(bl_chart,use_container_width=True)
-        st.caption('Gepooltes Modell (ein gemeinsames Modell für alle 16 Bundesländer, "Bundesland" als '
-                    'Eingabe-Merkmal) — schwächer als das nationale Modell, da je Bundesland nur 1–2 '
-                    'Wetterstationen statt 23 einfließen. Separate Modelle je Bundesland noch nicht verglichen.')
+        BL_SOURCES=['predicted_wind_onshore','predicted_solar','predicted_biomass','predicted_hydro','predicted_other_renewables']
+        if set(BL_SOURCES) <= set(bl_day.columns) and bl_day[BL_SOURCES].notna().all().all():
+            bl_order=['Wind Onshore','Solar','Biomasse','Sonstiges']
+            bl_colors={'Wind Onshore':'#2a78d6','Solar':'#1baf7a','Biomasse':'#eda100','Sonstiges':'#e87ba4'}
+            bl_breakdown=pd.DataFrame({'hour':bl_day.hour.to_numpy(),'Wind Onshore':bl_day.predicted_wind_onshore.to_numpy(),
+                                       'Solar':bl_day.predicted_solar.to_numpy(),'Biomasse':bl_day.predicted_biomass.to_numpy(),
+                                       'Sonstiges':(bl_day.predicted_hydro+bl_day.predicted_other_renewables).to_numpy()})
+            bl_long=bl_breakdown.melt(id_vars='hour',value_vars=bl_order,var_name='Quelle',value_name='Anteil')
+            bl_long['rank']=bl_long.Quelle.map({name:i for i,name in enumerate(bl_order)})
+            st.altair_chart(alt.Chart(bl_long).mark_area().encode(
+                x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+                y=alt.Y('Anteil:Q',title=f'Grünanteil nach Quelle, {chosen_state} (%)',stack='zero'),
+                order=alt.Order('rank:Q',sort='ascending'),
+                color=alt.Color('Quelle:N',sort=bl_order,scale=alt.Scale(domain=bl_order,range=[bl_colors[k] for k in bl_order]),
+                                legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
+                ).properties(height=300),use_container_width=True)
+            st.caption('Wasserkraft und Geothermie sind zu "Sonstiges" zusammengefasst. Wind auf See ist keinem '
+                       'Bundesland zugeordnet und fehlt daher in der Länderansicht.')
+        st.caption('Bundesland-Modell: XGBoost, ein gemeinsames Modell für alle 16 Länder, mit Wetter, '
+                   'installierter Leistung, Kalender, deutschlandweiten Energiedaten von vor 7 Tagen und der '
+                   'Erzeugung im Land von vor 14 Tagen. Am unsichersten für Berlin, Bremen und Mecklenburg-Vorpommern.')
 
-st.caption('Nationale Werte: Hauptmodell XGBoost (getrennte Modelle), CO₂ selbst berechnet aus SMARD-Erzeugung und UBA-Emissionsfaktoren (direkte Emissionen), Grünanteil als Summe der sechs Quellen. Bundesland-Werte: gepooltes HistGradientBoosting-Modell. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')
+st.caption('Nationale Werte: Hauptmodell XGBoost (getrennte Modelle), CO₂ selbst berechnet aus SMARD-Erzeugung und UBA-Emissionsfaktoren (direkte Emissionen), Grünanteil als Summe der sechs Quellen. Bundesland-Werte: XGBoost-Bundesland-Modell, Grünanteil als Summe von fünf Quellen. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')

@@ -3019,3 +3019,27 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   nicht geprüft). Empfehlung: Stufe 2 als neues Bundesland-Modell.
 - **Grenze:** Vergleich zum alten Bundesland-Modell nur grob (anderes
   Schema, 3 Lernjahre); alt Test 2025 CO2 R² 0,863, neu Stufe 2 0,876.
+
+## Bundesland-Modell neu: final, Live und Dashboard (11.11.2026, ausgeführt)
+
+- **Final:** `scripts/train_final_bundesland_xgb.py` →
+  `reports/final_xgboost_bundesland_2015_20261026_v1` (Stufe 2, 6 Modelle,
+  1.646.656 Zeilen, Trainingsende 2026-10-26 23:00 UTC; gespeicherte Datei
+  neu geladen und geprüft).
+- **Live:** `scripts/predict_bundesland_xgb_forecast.py --bundesland-dir …
+  --national-dir …` ergänzt den Bundesland-Ordner (Stufe-1-Eingaben aus dessen
+  inputs.csv) um nationale t−168 h-Werte (inputs.csv des nationalen Ordners)
+  und die Landeserzeugung t−336 h (Energy-Charts-Wochendateien; bricht ab,
+  wenn eine fehlt). Quellen bei 0 abgeschnitten, Grünanteil = Summe; alte
+  HistGB-Spalten bleiben als `hist_gradient_boosting_*`.
+  `build_bundesland_v2.load_generation` nimmt dafür optional eine Dateiliste.
+- **Backtest 27.10.-04.11.2026 nachgerechnet (ungesehen, geprüft, 2.640
+  Zeilen mit Istwert):** CO2 R² 0,738 / MAE 82,0 (alt 0,711 / 84,6);
+  Grünanteil R² 0,438 / MAE 12,9 (alt 0,413 / 13,5). Nur 9 Tage.
+- **Dashboard:** `scripts/export_bundesland_history.py` → kompakte gzip-Kopie
+  der Testvorhersagen 2018-2026 (`…stage2_expanding_v1/dashboard`, 23 MB);
+  `src/dashboard_logic.py` liest Verlauf, Backtest und Live (Quellen optional),
+  `app.py` zeigt je Land zusätzlich die Quellen; Einheit gCO₂/kWh.
+  AppTest ohne Fehler (15.06.2025, 30.10.2026, 12.11.2026).
+- **Workflow:** Download der Energy-Charts-Wochendateien je Land und neuer
+  Vorhersageschritt nach dem bisherigen Bundesland-Schritt.
