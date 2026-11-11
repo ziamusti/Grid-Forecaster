@@ -3272,3 +3272,70 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Tabelle gesamt, Bild je Land, Gegenprobe ERA5, Plan 12.11.-11.12.;
   Auswertung frühestens ab etwa 20.12.2026). Am Beispieltag Bayern:
   Grünanteil im Mittel +17,4 Prozentpunkte, auch nachts (etwa 60 % statt 35 %).
+
+## Ursache des zu hohen Grünanteils nach dem Trainingsende untersucht (11.11.2026, ausgeführt)
+
+Nur Analysen, kein Training, nichts am Modell geändert (Skripte im Scratchpad).
+
+- **Je Quelle (Länder, Rückblick):** Wind an Land +3,4, Biomasse +2,0,
+  Photovoltaik +1,1, Wasser +0,4 Prozentpunkte; fast alle Quellen in fast
+  allen Ländern zu hoch → spricht für einen zu großen Nenner (mehr
+  konventionelle Erzeugung im Ist) statt für eine einzelne Quelle.
+- **Verworfen:** (1) Halbfertige Energy-Charts-Wochen im Training: alle
+  Trainingswochen am 08.11. vollständig geladen; nur Woche 44 (nach
+  Trainingsende) war beim Laden unvollständig (konventionelle Erzeugung ab
+  29.10. 23:00 als 0). (2) Andere Eingaben im Betrieb als im Training:
+  20./21.10.2026 mit dem Betriebs-Aufbau neu gebaut, alle Stufe-1- und
+  Stufe-2-Eingaben identisch zur Trainingstabelle (temporärer Ordner danach
+  gelöscht). (3) Test zeigt keinen solchen Fehler: mittlere Abweichung
+  Grünanteil je Testjahr −1,9 bis +0,4, Oktober 2026 +0,9.
+- **Befund:** Energy-Charts (Summe der Länder) weist ab 28.10.2026 deutlich
+  mehr Erdgas aus als SMARD: Wochenmittel +8,3 GW (W44) und +10,8 GW (W45)
+  gegenüber +2,2 bis +4,8 GW in denselben Wochen 2023-2025 und +2,4 bis
+  +6,4 GW in W38-W43 2026. Andere Energieträger nahezu unverändert.
+  Tagesweise Korrelation zwischen diesem Gas-Überschuss und der mittleren
+  Abweichung des Grünanteils über alle Länder: 0,90 (stündlich 0,68). Am
+  27.10. (5,3 GW) liegt das Modell noch −4,2 zu niedrig, danach bei
+  9-11 GW +5,6 bis +10,4 zu hoch. Rechnet man den Gas-Überschuss über 3 GW
+  anteilig nach Gaserzeugung der Länder heraus (Näherung), sinkt die
+  mittlere Abweichung von +6,9 auf +3,0 Prozentpunkte.
+- **Einordnung:** Ob das zusätzliche Gas real ist (z. B. früher Beginn der
+  Heizperiode mit Kraft-Wärme-Kopplung) oder eine vorläufige Schätzung von
+  Energy-Charts, die später korrigiert wird, ist offen. Prüfung: dieselben
+  Wochen in einigen Wochen erneut laden und vergleichen.
+- **Deutschland-Modell (Maßstab SMARD, Gas-Effekt nicht relevant):** Fehler je
+  Quelle wechseln von Tag zu Tag (Wind an Land bis +5,6 am 06.11.,
+  Photovoltaik bis +4,0 am 03.11.), Biomasse leicht +0,6. Mit gemessenem
+  Wetter war die Abweichung 27.10.-04.11. nur +0,36 statt +1,55 → hier vor
+  allem Fehler der Wettervorhersage.
+
+## Demonstrator Carbon-aware Scheduler (11.11.2026, ausgeführt)
+
+- **Auftrag:** Demonstrator für Forschungsfrage 4 bauen (Auswertung der
+  Einsparung über viele Tage folgt als eigener Schritt).
+- **Umsetzung (kein Training):** `scripts/carbon_scheduler.py`. Eingabe:
+  Jobdauer (ganze Stunden), Frist und frühester Start (deutsche Zeit),
+  optional Bundesland. Liest die Live-Vorhersage wie das Dashboard
+  (`predictions_history.csv` bzw. `predictions_bundesland_history.csv`) oder
+  eine eigene Datei, prüft jede volle Startstunde, deren Jobstunden ganz in
+  der Vorhersage liegen, und wählt die mit dem kleinsten mittleren
+  vorhergesagten CO2. Ausgabe zusätzlich: CO2 bei sofortigem Start und
+  Mittel über alle erlaubten Starts (Erwartungswert eines zufälligen Starts).
+  Hinweis, wenn die Frist hinter dem Vorhersageende liegt. `--ausfuehren`
+  wartet bis zum Start und führt einen Befehl aus. Jede Entscheidung wird in
+  `reports/scheduler/entscheidungen.csv` protokolliert (für spätere Prüfung
+  gegen SMARD). Schnittstelle angelehnt an bluehands
+  `CalculateBestExecutionTime(Ort, frühester Start, fertig bis, Dauer)`.
+- **Geprüft (Tests mit Log im Scratchpad):** 2 h/24 h Deutschland, 4 h Bayern
+  bis 14.11., Frist nach Vorhersageende (Hinweis erscheint), Ausführung eines
+  Test-Backups (Ordnerkopie, Rückgabecode 0), Fehler bei zu kurzer Frist.
+  Die genannten Einsparungen sind nur laut Vorhersage, nicht gemessen.
+- **Nachtrag Dashboard (11.11.2026):** Rechenkern nach `src/scheduler_logic.py`
+  ausgelagert (`best_execution_time`, `saving_percent`), vom Skript und vom
+  Dashboard gemeinsam genutzt. Neuer Abschnitt „Job planen“ unten im
+  Dashboard: Jobdauer 1-6 h, Ort (Deutschland oder Bundesland), Frist
+  6/12/24/48/72 h, frühester Start (deutsche Zeit); vier Kacheln (bester
+  Start, erwartetes CO2 und Grünanteil, Einsparung gegenüber sofort und
+  zufällig) und Diagramm mit bestem Fenster und Linie „sofort“. Geprüft:
+  AppTest ohne Fehler (Deutschland, Bayern, Tag ohne Vorhersage mit Hinweis),
+  Ansicht im Browser (Chrome, headless).

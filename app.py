@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from src.dashboard_logic import add_scores,best_window,category,load_bundesland_predictions,load_predictions
+from src.scheduler_logic import best_execution_time,saving_percent
 
 ROOT=Path(__file__).resolve().parent
 st.set_page_config(page_title='Grid Forecaster',page_icon='🌱',layout='wide')
@@ -183,7 +184,7 @@ st.markdown(f'<div class="status" style="--accent:{color}">{icon} {label}: Beste
 c1,c2,c3,c4=st.columns(4)
 c1.metric('Beste Startzeit',f'{best["start"]:%H:%M} UTC')
 c2.metric('Ø CO₂ im Fenster',f'{best["average_co2"]:.0f} gCO₂/kWh')
-c3.metric('Ø Grünanteil',f'{best["average_renewable"]:.1f} %')
+c3.metric('Ø Grünanteil im Fenster',f'{best["average_renewable"]:.1f} %')
 c4.metric('Kennzahl −2 bis +2',f'{best["score"]:+.1f}',help='+2 bedeutet innerhalb dieses Tages besonders emissionsarm; −2 besonders emissionsreich.')
 
 st.divider()
@@ -350,5 +351,72 @@ else:
         st.caption('Bundesland-Modell: XGBoost, ein gemeinsames Modell für alle 16 Länder, mit Wetter, '
                    'installierter Leistung, Kalender, deutschlandweiten Energiedaten von vor 7 Tagen und der '
                    'Erzeugung im Land von vor 14 Tagen. Am unsichersten für Berlin, Bremen und Mecklenburg-Vorpommern.')
+
+# Demonstrator: carbon-aware scheduling of a flexible job (same logic as scripts/carbon_scheduler.py).
+st.divider()
+st.markdown('#### 🗓️ Job planen – wann soll mein Job laufen?')
+st.caption('Für einen zeitlich flexiblen Job (z. B. Backup) die emissionsärmste Startzeit innerhalb der Frist. '
+           'Alle Zeiten in deutscher Zeit.')
+BERLIN='Europe/Berlin'
+places=['Deutschland']+(sorted(bl_frame.bundesland.unique()) if bl_frame is not None and not bl_frame.empty else [])
+now_local=pd.Timestamp.now(tz=BERLIN).ceil('h')
+j1,j2,j3=st.columns([1,1,2])
+job_hours=j1.selectbox('Jobdauer',list(range(1,7)),index=1,format_func=lambda h:f'{h} Stunde'+('n' if h>1 else ''))
+job_place=j2.selectbox('Ort',places,key='job_place')
+job_span=j3.select_slider('Fertig spätestens nach',options=[6,12,24,48,72],value=24,
+                          format_func=lambda h:f'{h} Stunden',help='Frist ab dem frühesten Start.')
+k1,k2=st.columns([1,1])
+start_date=k1.date_input('Frühester Start (Tag)',value=now_local.date(),format='DD.MM.YYYY',key='job_date')
+start_hour=k2.selectbox('Frühester Start (Uhrzeit)',list(range(24)),index=now_local.hour,format_func=lambda h:f'{h:02d}:00',key='job_hour')
+job_earliest=pd.Timestamp(start_date).tz_localize(BERLIN)+pd.Timedelta(hours=start_hour)
+job_deadline=job_earliest+pd.Timedelta(hours=job_span)
+if job_place=='Deutschland':
+    job_forecast=frame[['time_utc','predicted_co2','predicted_renewable']]
+else:
+    job_forecast=bl_frame.loc[bl_frame.bundesland==job_place,['time_utc','predicted_co2','predicted_renewable']]
+job_forecast=job_forecast.dropna().drop_duplicates('time_utc',keep='last').set_index('time_utc').sort_index()
+plan=best_execution_time(job_forecast,job_earliest.tz_convert('UTC'),job_deadline.tz_convert('UTC'),job_hours)
+forecast_end=(job_forecast.index.max()+pd.Timedelta(hours=1)).tz_convert(BERLIN)
+if plan is None:
+    st.info(f'Für diesen Zeitraum gibt es keine Vorhersage (Vorhersage reicht bis {forecast_end:%d.%m. %H:%M}).')
+else:
+    if job_deadline>forecast_end:
+        st.warning(f'Die Vorhersage reicht nur bis {forecast_end:%d.%m. %H:%M}; spätere Startzeiten wurden nicht geprüft.')
+    best_local=plan['start'].tz_convert(BERLIN); end_local=plan['end'].tz_convert(BERLIN)
+    m1,m2,m3,m4=st.columns(4)
+    m1.metric('Bester Start',f'{best_local:%d.%m. %H:%M}',help=f'Ende {end_local:%d.%m. %H:%M}')
+    m2.metric('Erwartet im Fenster',f'{plan["co2"]:.0f} g · {plan["renewable"]:.0f} %',help='gCO₂/kWh · Grünanteil')
+    m3.metric('Gegenüber sofort',f'−{saving_percent(plan["co2"],plan["immediate"]["co2"]):.0f} %',
+              help=f'Sofortiger Start: {plan["immediate"]["co2"]:.0f} gCO₂/kWh')
+    m4.metric('Gegenüber zufällig',f'−{saving_percent(plan["co2"],plan["random_co2"]):.0f} %',
+              help=f'Mittel über alle {plan["starts"]} erlaubten Startzeiten: {plan["random_co2"]:.0f} gCO₂/kWh')
+    span=job_forecast.loc[(job_forecast.index>=job_earliest.floor('h').tz_convert('UTC'))&
+                          (job_forecast.index<job_deadline.tz_convert('UTC'))].reset_index()
+    # Naive local times so Vega shows German time regardless of the viewer's time zone.
+    span['zeit']=span.time_utc.dt.tz_convert(BERLIN).dt.tz_localize(None)
+    naive=lambda t:t.tz_convert(BERLIN).tz_localize(None)
+    job_hover=alt.selection_point(nearest=True,on='pointerover',fields=['zeit'],empty=False)
+    job_window=alt.Chart(pd.DataFrame({'a':[naive(plan['start'])],'b':[naive(plan['end'])]})).mark_rect(
+        color='#8fd3ac',opacity=.35).encode(x='a:T',x2='b:T')
+    job_now=alt.Chart(pd.DataFrame({'a':[naive(plan['immediate']['start'])],'t':['sofort']})).mark_rule(
+        color='#c2413b',strokeDash=[5,4],strokeWidth=1.5).encode(x='a:T')
+    job_now_text=alt.Chart(pd.DataFrame({'a':[naive(plan['immediate']['start'])]})).mark_text(
+        align='left',dx=5,dy=-6,baseline='bottom',fontSize=11,color='#c2413b',fontWeight='bold').encode(
+        x='a:T',y=alt.value(14),text=alt.value('sofort'))
+    job_best_text=alt.Chart(pd.DataFrame({'a':[naive(plan['start'])]})).mark_text(
+        align='left',dx=5,baseline='top',fontSize=11,color='#2f6b48',fontWeight='bold').encode(
+        x='a:T',y=alt.value(6),text=alt.value('bestes Fenster'))
+    job_line=alt.Chart(span).mark_line(strokeWidth=2.2,color='#263746').encode(
+        x=alt.X('zeit:T',title='Deutsche Zeit',axis=alt.Axis(format='%d.%m. %H:%M',labelAngle=0,tickCount=8)),
+        y=alt.Y('predicted_co2:Q',title='gCO₂/kWh (Vorhersage)',scale=alt.Scale(zero=False)))
+    job_points=job_line.mark_point(size=70,filled=True,color='#263746').encode(
+        opacity=alt.condition(job_hover,alt.value(1),alt.value(0)),
+        tooltip=[alt.Tooltip('zeit:T',title='Zeit',format='%d.%m. %H:%M'),
+                 alt.Tooltip('predicted_co2:Q',title='CO₂ (g/kWh)',format='.0f'),
+                 alt.Tooltip('predicted_renewable:Q',title='Grünanteil (%)',format='.0f')]).add_params(job_hover)
+    st.altair_chart(alt.layer(job_window,job_now,job_line,job_points,job_now_text,job_best_text).properties(height=300),
+                    use_container_width=True)
+    st.caption('🟩 Bestes Fenster · rote Linie: sofortiger Start. Einsparung nur laut Vorhersage, nicht gemessen. '
+               'Gleiche Rechnung im Terminal: scripts/carbon_scheduler.py.')
 
 st.caption('Nationale Werte: Hauptmodell XGBoost (getrennte Modelle), CO₂ selbst berechnet aus SMARD-Erzeugung und UBA-Emissionsfaktoren (direkte Emissionen), Grünanteil als Summe der sechs Quellen. Bundesland-Werte: XGBoost-Bundesland-Modell, Grünanteil als Summe von fünf Quellen. Ampel: Grün ≥60 %, Gelb 40–<60 %, Rot <40 %.')

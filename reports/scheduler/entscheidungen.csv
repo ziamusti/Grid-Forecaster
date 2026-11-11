@@ -1,0 +1,2 @@
+entschieden_utc,ort,dauer_h,fruehester_start_utc,fertig_bis_utc,bester_start_utc,erwartet_co2,erwartet_gruen,sofort_co2,zufall_co2,moegliche_starts,vorhersage_bis_utc,quelle,ausgefuehrt,befehl,rueckgabecode
+2026-11-11T20:59:24.609652+00:00,Deutschland,2,2026-11-11T20:59:24.609652+00:00,2026-11-12T20:59:24.609652+00:00,2026-11-12T18:00:00+00:00,299.8,63.1,650.5,462.9,22,2026-11-15T00:00:00+00:00,live (grid-forecaster-data),False,,
