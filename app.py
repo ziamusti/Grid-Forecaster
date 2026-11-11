@@ -54,6 +54,78 @@ else:
     alt.themes.register('grid_forecaster',chart_theme)
     alt.themes.enable('grid_forecaster')
 
+
+def sources_chart(wide: pd.DataFrame, order: list[str], colors: dict, y_title: str, height: int):
+    # Stacked area of the source shares per hour. Click a legend entry to hide
+    # or show that source (the others restack); hover shows a box with every
+    # source and the total, like energy-charts.info.
+    long=wide.melt(id_vars='hour',value_vars=order,var_name='Quelle',value_name='Anteil')
+    long['rank']=long.Quelle.map({name:i for i,name in enumerate(order)})
+    shown=alt.selection_point(fields=['Quelle'],bind='legend',toggle='true',value=[{'Quelle':q} for q in order])
+    hover=alt.selection_point(fields=['hour'],on='pointerover',clear='pointerout',empty=False)
+    x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23]))
+    color=alt.Color('Quelle:N',sort=order,scale=alt.Scale(domain=order,range=[colors[k] for k in order]),
+                    legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
+    # Invisible layer that owns the legend click and dims hidden entries.
+    legend_layer=alt.Chart(long).mark_point(size=0,filled=True).encode(
+        x=x,y='Anteil:Q',color=color,opacity=alt.condition(shown,alt.value(1),alt.value(.25))).add_params(shown)
+    areas=alt.Chart(long).transform_filter(shown).mark_area(opacity=.9).encode(
+        x=x,y=alt.Y('Anteil:Q',title=y_title,stack='zero'),order=alt.Order('rank:Q',sort='ascending'),color=color)
+    table=wide.assign(Zeit=wide.hour.map(lambda h:f'{h:02d}:00 UTC'),Summe=wide[order].sum(axis=1),
+                      lo=wide.hour-.5,hi=wide.hour+.5)
+    tooltip=[alt.Tooltip('Zeit:N',title='Zeit'),
+             *[alt.Tooltip(field=q,type='quantitative',title=q,format='.1f') for q in order],
+             alt.Tooltip('Summe:Q',title='Grünanteil gesamt',format='.1f')]
+    targets=alt.Chart(table).mark_rect(color='#000',opacity=.001,clip=True).encode(
+        x='lo:Q',x2='hi:Q',tooltip=tooltip).add_params(hover)
+    rule=alt.Chart(table).mark_rule(color='#1d2b26',strokeWidth=1.2).encode(
+        x='hour:Q',opacity=alt.condition(hover,alt.value(.5),alt.value(0)))
+    # The legend-owning layer must come first, otherwise the click is not wired.
+    return alt.layer(legend_layer,areas,rule,targets).properties(height=height)
+
+
+@st.cache_data(show_spinner=False)
+def state_borders():
+    # Passed as a data: URL, because Streamlit converts inline chart data to
+    # Arrow tables, which fails for nested GeoJSON geometries.
+    import base64
+    raw=(ROOT/'data/geo/bundeslaender_naturalearth.geojson').read_bytes()
+    return 'data:application/json;base64,'+base64.b64encode(raw).decode('ascii')
+
+
+def bundesland_map(rows: pd.DataFrame, height: int = 560):
+    # One colour per Bundesland by traffic light of the predicted renewable
+    # share; hover shows a card with time, renewable share, CO2 and the
+    # strongest renewable source.
+    names={'predicted_wind_onshore':'Wind an Land','predicted_solar':'Solar','predicted_biomass':'Biomasse',
+           'predicted_hydro':'Wasser','predicted_other_renewables':'Sonstige'}
+    table=rows[['bundesland','time_utc','predicted_co2','predicted_renewable']].copy()
+    table['Ampel']=table.predicted_renewable.map(lambda value:category(value)[0])
+    table['Zeit']=table.time_utc.dt.strftime('%d.%m.%Y, %H:00 UTC')
+    sources=[c for c in names if c in rows.columns]
+    if sources:
+        strongest=rows[sources].idxmax(axis=1).map(names)
+        share=rows[sources].max(axis=1)
+        table['Quelle']=[f'{n} ({v:.0f} %)' if isinstance(n,str) else '–' for n,v in zip(strongest,share)]
+    else:
+        table['Quelle']='–'
+    table=table.drop(columns='time_utc').rename(columns={'bundesland':'Land','predicted_renewable':'Gruen','predicted_co2':'CO2'})
+    colors={name:category(value)[1] for name,value in [('Grün',100),('Gelb',50),('Rot',0)]}
+    hover=alt.selection_point(fields=['properties.name'],on='pointerover',clear='pointerout',empty=False)
+    borders=alt.UrlData(url=state_borders(),format=alt.DataFormat(property='features',type='json'))
+    return alt.Chart(borders).mark_geoshape(stroke='white').encode(
+        color=alt.Color('Ampel:N',scale=alt.Scale(domain=list(colors),range=list(colors.values())),
+                        legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12)),
+        strokeWidth=alt.condition(hover,alt.value(3),alt.value(1)),
+        opacity=alt.condition(hover,alt.value(1),alt.value(.88)),
+        tooltip=[alt.Tooltip('Land:N',title='Bundesland'),alt.Tooltip('Zeit:N',title='Zeit'),
+                 alt.Tooltip('Gruen:Q',title='Grünanteil (%)',format='.0f'),
+                 alt.Tooltip('CO2:Q',title='CO₂ (gCO₂/kWh)',format='.0f'),
+                 alt.Tooltip('Quelle:N',title='Stärkste erneuerbare Quelle'),alt.Tooltip('Ampel:N',title='Ampel')]
+    ).transform_lookup(lookup='properties.name',
+                       from_=alt.LookupData(table,'Land',['Land','Zeit','Gruen','CO2','Quelle','Ampel'])
+    ).add_params(hover).project('mercator').properties(height=height)
+
 @st.cache_data(show_spinner=False,ttl=60)
 def data(source_version='xgboost-main-model-v1'):
     return load_predictions(ROOT)
@@ -161,13 +233,19 @@ st.caption('🟩 Grün hinterlegt: bestes Zeitfenster für die gewählte Jobdaue
 
 with st.expander('Stündliche Werte anzeigen'):
     table=day[['time_utc','predicted_co2','predicted_renewable','co2_change','score']].copy()
-    table['Ampel']=table.predicted_renewable.map(lambda value:ICONS[category(value)[0]])
+    table['Ampel']=table.predicted_renewable.map(lambda value:category(value)[0])
     table['time_utc']=table.time_utc.dt.strftime('%H:%M')
     table.columns=['Zeit (UTC)','CO₂ (gCO₂/kWh)','Grünanteil (%)','Δ CO₂','Kennzahl','Ampel']
-    st.dataframe(table,hide_index=True,width='stretch',column_config={
+    # Ampel as a coloured label in the traffic-light colours (same as the sidebar
+    # chips); the first hour has no previous hour, so Δ CO₂ shows a dash.
+    AMPEL={name:category(value)[1] for name,value in [('Grün',100),('Gelb',50),('Rot',0)]}
+    styled=(table.style
+            .map(lambda name:f'color:{AMPEL[name]};background-color:{AMPEL[name]}1f;font-weight:600',subset=['Ampel'])
+            .format({'Δ CO₂':'{:+.1f}'},na_rep='–')
+            .format({'Ampel':lambda name:f'● {name}'}))
+    st.dataframe(styled,hide_index=True,width='stretch',column_config={
         'CO₂ (gCO₂/kWh)':st.column_config.NumberColumn(format='%.0f'),
         'Grünanteil (%)':st.column_config.ProgressColumn(format='%.0f %%',min_value=0,max_value=100),
-        'Δ CO₂':st.column_config.NumberColumn(format='%+.1f'),
         'Kennzahl':st.column_config.NumberColumn(format='%+d'),
         'Ampel':st.column_config.TextColumn(width='small'),
     })
@@ -180,27 +258,14 @@ if day[BREAKDOWN_COLS].notna().all().all():
     order=['Wind Onshore','Wind Offshore','Solar','Biomasse','Sonstiges']
     source_colors={'Wind Onshore':'#2a78d6','Wind Offshore':'#eb6834','Solar':'#1baf7a',
                    'Biomasse':'#eda100','Sonstiges':'#e87ba4'}
-    breakdown=day[['time_utc']].copy()
-    breakdown['hour']=breakdown.time_utc.dt.hour
-    breakdown['Wind Onshore']=day.predicted_wind_onshore
-    breakdown['Wind Offshore']=day.predicted_wind_offshore
-    breakdown['Solar']=day.predicted_solar
-    breakdown['Biomasse']=day.predicted_biomass
-    breakdown['Sonstiges']=day.predicted_hydro+day.predicted_other_renewables
-    long=breakdown.melt(id_vars='hour',value_vars=order,var_name='Quelle',value_name='Anteil')
-    rank={name:i for i,name in enumerate(order)}
-    long['rank']=long.Quelle.map(rank)
-    breakdown_chart=alt.Chart(long).mark_area().encode(
-        x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
-        y=alt.Y('Anteil:Q',title='Anteil an der Erzeugung (%)',stack='zero'),
-        order=alt.Order('rank:Q',sort='ascending'),
-        color=alt.Color('Quelle:N',sort=order,
-            scale=alt.Scale(domain=order,range=[source_colors[k] for k in order]),
-            legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
-        ).properties(height=380)
-    st.altair_chart(breakdown_chart,use_container_width=True)
+    breakdown=pd.DataFrame({'hour':day.time_utc.dt.hour.to_numpy(),'Wind Onshore':day.predicted_wind_onshore.to_numpy(),
+                            'Wind Offshore':day.predicted_wind_offshore.to_numpy(),'Solar':day.predicted_solar.to_numpy(),
+                            'Biomasse':day.predicted_biomass.to_numpy(),
+                            'Sonstiges':(day.predicted_hydro+day.predicted_other_renewables).to_numpy()})
+    st.altair_chart(sources_chart(breakdown,order,source_colors,'Anteil an der Erzeugung (%)',380),use_container_width=True)
     st.caption('Der Grünanteil ist die Summe dieser sechs Quellen-Vorhersagen. Wasserkraft und Sonstige '
-               'Erneuerbare sind zu "Sonstiges" zusammengefasst — sie sind am schwersten vorherzusagen.')
+               'Erneuerbare sind zu "Sonstiges" zusammengefasst. Legende anklicken blendet eine Quelle aus oder ein; '
+               'Maus über das Diagramm zeigt alle Werte der Stunde.')
 else:
     st.info('Für dieses Datum liegt keine Aufschlüsselung nach Energiequelle vor.')
 
@@ -210,6 +275,15 @@ bl_frame=bundesland_data()
 if bl_frame is None or bl_frame.empty:
     st.info('Noch keine Bundesland-Vorhersage verfügbar.')
 else:
+    map_hour=st.slider('Stunde für die Karte (UTC)',0,23,12,help='Karte aller Bundesländer für diese Stunde des gewählten Tages.')
+    map_time=pd.Timestamp(selected).tz_localize('UTC')+pd.Timedelta(hours=map_hour)
+    map_rows=bl_frame.loc[bl_frame.time_utc==map_time]
+    if map_rows.empty:
+        st.info(f'Für {map_time:%d.%m.%Y, %H:00} UTC liegt keine Bundesland-Vorhersage vor.')
+    else:
+        st.altair_chart(bundesland_map(map_rows),use_container_width=True)
+        st.caption('Farbe = Ampel nach vorhergesagtem Grünanteil. Maus über ein Land zeigt die Werte. '
+                   'Landesgrenzen: Natural Earth (gemeinfrei).')
     states=sorted(bl_frame.bundesland.unique())
     chosen_state=st.selectbox('Bundesland',states,index=states.index('Berlin') if 'Berlin' in states else 0)
     bl_day=bl_frame.loc[(bl_frame.bundesland==chosen_state)&(bl_frame.time_utc.dt.date==selected)].copy()
@@ -249,15 +323,8 @@ else:
             bl_breakdown=pd.DataFrame({'hour':bl_day.hour.to_numpy(),'Wind Onshore':bl_day.predicted_wind_onshore.to_numpy(),
                                        'Solar':bl_day.predicted_solar.to_numpy(),'Biomasse':bl_day.predicted_biomass.to_numpy(),
                                        'Sonstiges':(bl_day.predicted_hydro+bl_day.predicted_other_renewables).to_numpy()})
-            bl_long=bl_breakdown.melt(id_vars='hour',value_vars=bl_order,var_name='Quelle',value_name='Anteil')
-            bl_long['rank']=bl_long.Quelle.map({name:i for i,name in enumerate(bl_order)})
-            st.altair_chart(alt.Chart(bl_long).mark_area().encode(
-                x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
-                y=alt.Y('Anteil:Q',title=f'Grünanteil nach Quelle, {chosen_state} (%)',stack='zero'),
-                order=alt.Order('rank:Q',sort='ascending'),
-                color=alt.Color('Quelle:N',sort=bl_order,scale=alt.Scale(domain=bl_order,range=[bl_colors[k] for k in bl_order]),
-                                legend=alt.Legend(title=None,orient='top',direction='horizontal',labelFontSize=12))
-                ).properties(height=300),use_container_width=True)
+            st.altair_chart(sources_chart(bl_breakdown,bl_order,bl_colors,f'Grünanteil nach Quelle, {chosen_state} (%)',300),
+                            use_container_width=True)
             st.caption('Wasserkraft und Geothermie sind zu "Sonstiges" zusammengefasst. Wind auf See ist keinem '
                        'Bundesland zugeordnet und fehlt daher in der Länderansicht.')
         st.caption('Bundesland-Modell: XGBoost, ein gemeinsames Modell für alle 16 Länder, mit Wetter, '
