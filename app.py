@@ -24,9 +24,9 @@ border-left:6px solid var(--accent);box-shadow:0 2px 10px rgba(29,43,38,.05)}
 [data-testid="stMetric"]{background:#ffffff;border:1px solid #e3ebe7;padding:1rem 1.1rem;border-radius:16px;
 box-shadow:0 2px 10px rgba(29,43,38,.05)}
 [data-testid="stMetricLabel"] p{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5d6f68}
-[data-testid="stMetricValue"]{font-weight:700;letter-spacing:-.02em;color:#1d2b26}
+[data-testid="stMetricValue"]{font-weight:700;letter-spacing:-.02em;color:#1d2b26;font-size:clamp(1.3rem,2.1vw,2rem)}
 [data-testid="stVegaLiteChart"],[data-testid="stArrowVegaLiteChart"]{background:#ffffff;border:1px solid #e3ebe7;
-border-radius:16px;padding:.8rem .6rem .4rem;box-shadow:0 2px 10px rgba(29,43,38,.05)}
+border-radius:16px;box-shadow:0 2px 10px rgba(29,43,38,.05)}
 [data-testid="stSidebar"]{background:#eef3f0;border-right:1px solid #e3ebe7}
 .chips{display:flex;flex-direction:column;gap:.45rem}
 .chip{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .7rem;border-radius:999px;font-size:.88rem;
@@ -43,7 +43,9 @@ def chart_theme():
     # Same charts, calmer look: one font, light grid, no axis domain lines.
     axis=dict(labelFont='Inter',titleFont='Inter',labelColor='#5d6f68',titleColor='#5d6f68',labelFontSize=12,
               titleFontSize=12,titleFontWeight=600,gridColor='#edf2ef',domain=False,tickColor='#e3ebe7')
-    return dict(config=dict(view=dict(stroke=None),font='Inter',axis=axis,
+    # Padding inside the chart; CSS padding on the card made Vega clip the axis labels.
+    return dict(padding=dict(left=14,right=14,top=12,bottom=8),autosize=dict(type='fit',contains='padding'),
+                config=dict(view=dict(stroke=None),font='Inter',axis=axis,
                             legend=dict(labelFont='Inter',labelFontSize=12,labelColor='#1d2b26',symbolType='circle'),
                             title=dict(font='Inter')))
 
@@ -290,12 +292,30 @@ else:
     if bl_day.empty:
         st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor.')
     else:
+        bl_day=add_scores(bl_day.sort_values('time_utc').reset_index(drop=True))
+        bl_best=best_window(bl_day,min(duration,len(bl_day)))
+        bl_label,bl_color=category(bl_best['average_renewable'])
+        bl_trend=bl_day.predicted_co2.iloc[-1]-bl_day.predicted_co2.iloc[0]
+        bl_trend_icon,bl_trend_text=(('📉','wird grüner') if bl_trend < -5 else ('📈','wird emissionsreicher')
+                                     if bl_trend > 5 else ('➡️','bleibt etwa stabil'))
+        st.markdown(f'<div class="status" style="--accent:{bl_color}">{ICONS[bl_label]} {chosen_state} – {bl_label}: '
+                    f'Bestes Zeitfenster {bl_best["start"]:%H:%M}–{bl_best["end_exclusive"]:%H:%M} UTC · '
+                    f'Ø {bl_best["average_co2"]:.0f} gCO₂/kWh, {bl_best["average_renewable"]:.0f} % grün · '
+                    f'{bl_trend_icon} Tagestrend {bl_trend_text}</div>',unsafe_allow_html=True)
         bl_day['hour']=bl_day.time_utc.dt.hour
+        # end_exclusive.hour would be 0 for a window ending at midnight, so use start+duration.
+        bl_start=bl_best['start'].hour;bl_end=bl_start+min(duration,len(bl_day))
+        bl_window_rect=alt.Chart(pd.DataFrame({'start':[bl_start],'end':[bl_end]})).mark_rect(
+            color='#8fd3ac',opacity=.3).encode(x='start:Q',x2='end:Q')
+        bl_window_label=alt.Chart(pd.DataFrame({'mid':[(bl_start+bl_end)/2],'predicted_co2':[float(bl_day.predicted_co2.max())]})).mark_text(
+            align='center',baseline='top',dy=4,fontSize=11,color='#2f6b48',fontWeight='bold'
+            ).encode(x='mid:Q',y=alt.Y('predicted_co2:Q',scale=alt.Scale(zero=False),axis=None),
+                     text=alt.value('Bestes Zeitfenster'))
         bl_co2_df=bl_day.assign(reihe='CO₂-Intensität')
         bl_renew_df=bl_day.assign(reihe='Grünanteil')
         bl_nearest=alt.selection_point(nearest=True,on='pointerover',fields=['hour'],empty=False)
         bl_co2_line=alt.Chart(bl_co2_df).mark_line(strokeWidth=2.2).encode(
-            x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,24,2))),scale=alt.Scale(domain=[0,23])),
+            x=alt.X('hour:Q',title='Stunde (UTC)',axis=alt.Axis(values=list(range(0,25,2))),scale=alt.Scale(domain=[0,24])),
             y=alt.Y('predicted_co2:Q',title='gCO₂/kWh',scale=alt.Scale(zero=False),
                     axis=alt.Axis(orient='left',titleColor='#263746',labelColor='#263746')),
             color=alt.Color('reihe:N',scale=color_scale,legend=legend))
@@ -313,7 +333,7 @@ else:
             text=alt.condition(bl_nearest,alt.Text('predicted_co2:Q',format='.0f'),alt.value('')))
         bl_renew_text=bl_renew_line.mark_text(align='left',dx=10,dy=10,fontSize=13,fontWeight='bold',color='#16846a').encode(
             text=alt.condition(bl_nearest,alt.Text('predicted_renewable:Q',format='.0f'),alt.value('')))
-        bl_chart=alt.layer(bl_co2_line,bl_renew_line,bl_selectors,bl_rule,bl_co2_points,bl_renew_points,bl_co2_text,bl_renew_text
+        bl_chart=alt.layer(bl_window_rect,bl_window_label,bl_co2_line,bl_renew_line,bl_selectors,bl_rule,bl_co2_points,bl_renew_points,bl_co2_text,bl_renew_text
             ).resolve_scale(y='independent',color='shared').properties(height=360)
         st.altair_chart(bl_chart,use_container_width=True)
         BL_SOURCES=['predicted_wind_onshore','predicted_solar','predicted_biomass','predicted_hydro','predicted_other_renewables']
