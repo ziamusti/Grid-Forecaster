@@ -44,7 +44,9 @@ def main():
     frame = inputs.assign(target_time_utc=times).merge(national, on='target_time_utc', how='left', validate='many_to_one')
 
     lag_times = times - pd.Timedelta(hours=336)
-    weeks = {(t.isocalendar()[0], t.isocalendar()[1]) for t in lag_times}
+    # Weekly files start at Monday 00:00 Berlin time (Sunday 23:00/22:00 UTC), so
+    # an hour can sit in the following ISO week's file; load that week too.
+    weeks = {(t.isocalendar()[0], t.isocalendar()[1]) for t in pd.concat([lag_times, lag_times + pd.Timedelta(days=1)])}
     paths = [RAW / str(y) / f'week_{y}_{w:02d}.json' for y, w in sorted(weeks)]
     missing = [str(p) for p in paths if not p.exists()]
     assert not missing, f'Energy-Charts-Wochendateien fehlen: {missing}'
