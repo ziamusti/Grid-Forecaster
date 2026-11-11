@@ -9,22 +9,50 @@ from src.dashboard_logic import add_scores,best_window,category,load_bundesland_
 ROOT=Path(__file__).resolve().parent
 st.set_page_config(page_title='Grid Forecaster',page_icon='🌱',layout='wide')
 st.markdown('''<style>
-.block-container{padding-top:1.6rem;max-width:1280px}
-.hero{padding:1.5rem 1.8rem;border-radius:18px;
-background:linear-gradient(120deg,#12372a,#1d6b4d);color:white;margin-bottom:1.1rem;
-box-shadow:0 6px 18px rgba(18,55,42,.18)}
-.hero h1{margin:0;font-size:2.1rem;letter-spacing:-.02em}
-.hero p{margin:.35rem 0 0;color:#d9fbe8;font-size:1.02rem}
-.status{padding:.9rem 1.1rem;border-radius:12px;color:white;font-weight:700;font-size:1.05rem;
-display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-[data-testid="stMetric"]{background:var(--background-color,#f5f8f6);border:1px solid rgba(120,140,130,.25);
-padding:1rem;border-radius:14px}
-[data-testid="stMetricLabel"]{font-weight:600;opacity:.85}
-hr{margin:1.4rem 0 1.1rem}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+html,body,[class*="css"],.stMarkdown,.stMetric,button,input,select,textarea{font-family:'Inter',sans-serif}
+.block-container{padding-top:1.4rem;max-width:1240px}
+h4{font-weight:700;letter-spacing:-.01em;color:#1d2b26;margin-top:.4rem}
+.hero{position:relative;overflow:hidden;padding:1.6rem 1.9rem;border-radius:20px;color:white;margin-bottom:1.3rem;
+background:radial-gradient(circle at 85% -20%,rgba(255,255,255,.18),transparent 45%),linear-gradient(120deg,#0f3326,#16846a);
+box-shadow:0 10px 30px rgba(15,51,38,.18)}
+.hero h1{margin:0;font-size:2rem;font-weight:700;letter-spacing:-.03em}
+.hero p{margin:.4rem 0 0;color:#d6f5e6;font-size:1rem;font-weight:500}
+.status{display:flex;align-items:center;gap:.6rem;padding:.85rem 1.1rem;border-radius:14px;margin-bottom:1rem;
+font-weight:600;font-size:1.02rem;color:#1d2b26;background:#ffffff;border:1px solid #e3ebe7;
+border-left:6px solid var(--accent);box-shadow:0 2px 10px rgba(29,43,38,.05)}
+[data-testid="stMetric"]{background:#ffffff;border:1px solid #e3ebe7;padding:1rem 1.1rem;border-radius:16px;
+box-shadow:0 2px 10px rgba(29,43,38,.05)}
+[data-testid="stMetricLabel"] p{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#5d6f68}
+[data-testid="stMetricValue"]{font-weight:700;letter-spacing:-.02em;color:#1d2b26}
+[data-testid="stVegaLiteChart"],[data-testid="stArrowVegaLiteChart"]{background:#ffffff;border:1px solid #e3ebe7;
+border-radius:16px;padding:.8rem .6rem .4rem;box-shadow:0 2px 10px rgba(29,43,38,.05)}
+[data-testid="stSidebar"]{background:#eef3f0;border-right:1px solid #e3ebe7}
+.chips{display:flex;flex-direction:column;gap:.45rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .7rem;border-radius:999px;font-size:.88rem;
+font-weight:600;color:#1d2b26;background:#ffffff;border:1px solid #e3ebe7;width:fit-content}
+.dot{width:.7rem;height:.7rem;border-radius:50%}
+hr{margin:1.5rem 0 1.1rem;border-color:#e3ebe7}
 </style>''',unsafe_allow_html=True)
 st.markdown('<div class="hero"><h1>🌱 Grid Forecaster</h1>'
             '<p>Historische Analyse der CO₂-Intensität und des Grünanteils in Deutschland</p></div>',
             unsafe_allow_html=True)
+
+
+def chart_theme():
+    # Same charts, calmer look: one font, light grid, no axis domain lines.
+    axis=dict(labelFont='Inter',titleFont='Inter',labelColor='#5d6f68',titleColor='#5d6f68',labelFontSize=12,
+              titleFontSize=12,titleFontWeight=600,gridColor='#edf2ef',domain=False,tickColor='#e3ebe7')
+    return dict(config=dict(view=dict(stroke=None),font='Inter',axis=axis,
+                            legend=dict(labelFont='Inter',labelFontSize=12,labelColor='#1d2b26',symbolType='circle'),
+                            title=dict(font='Inter')))
+
+
+if hasattr(alt,'theme'):  # Altair >= 5.5
+    alt.theme.register('grid_forecaster',enable=True)(chart_theme)
+else:
+    alt.themes.register('grid_forecaster',chart_theme)
+    alt.themes.enable('grid_forecaster')
 
 @st.cache_data(show_spinner=False,ttl=60)
 def data(source_version='xgboost-main-model-v1'):
@@ -47,7 +75,11 @@ with st.sidebar:
     duration=st.slider('Jobdauer in Stunden',1,6,3,help='Länge des gesuchten emissionsarmen Zeitfensters.')
     st.divider()
     st.caption('Ampel-Skala')
-    st.markdown('🟢 Grün ≥ 60 % Grünanteil  \n🟡 Gelb 40–<60 %  \n🔴 Rot < 40 %')
+    st.markdown('<div class="chips">'
+                '<span class="chip"><span class="dot" style="background:#16846a"></span>Grün ≥ 60 % Grünanteil</span>'
+                '<span class="chip"><span class="dot" style="background:#d69e2e"></span>Gelb 40–<60 %</span>'
+                '<span class="chip"><span class="dot" style="background:#c2413b"></span>Rot < 40 %</span></div>',
+                unsafe_allow_html=True)
     st.divider()
     if selected >= pd.Timestamp('2026-10-27').date():
         st.caption('Ab 27.10.2026: Hauptmodell (XGBoost, Trainingsende 26.10.2026) mit echter Wettervorhersage '
@@ -68,9 +100,10 @@ icon=ICONS[label]
 trend=day.predicted_co2.iloc[-1]-day.predicted_co2.iloc[0]
 trend_icon,trend_text=('📉','wird grüner') if trend < -5 else ('📈','wird emissionsreicher') if trend > 5 else ('➡️','bleibt etwa stabil')
 
-weekday=selected.strftime('%A, %d.%m.%Y')
+WEEKDAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag']
+weekday=f'{WEEKDAYS[selected.weekday()]}, {selected:%d.%m.%Y}'
 st.markdown(f'#### {weekday}')
-st.markdown(f'<div class="status" style="background:{color}">{icon} {label}: Bestes Zeitfenster '
+st.markdown(f'<div class="status" style="--accent:{color}">{icon} {label}: Bestes Zeitfenster '
             f'{best["start"]:%H:%M}–{best["end_exclusive"]:%H:%M} UTC · {trend_icon} Tagestrend {trend_text}</div>',
             unsafe_allow_html=True)
 c1,c2,c3,c4=st.columns(4)

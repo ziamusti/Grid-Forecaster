@@ -3141,3 +3141,15 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
 - **Erneut geprüft:** alle 17 Reihen 77.760 Stunden, 0 fehlend, 0 doppelt,
   keine fehlenden Quellen, alle Werte im möglichen Bereich, Summe der
   Quellen = Grünanteil. AppTest ohne Fehler (09.08.2018, 28.08.2026, 11.11.2026).
+
+## Dashboard: modernere Oberfläche (11.11.2026, ausgeführt)
+
+- **Auftrag:** Oberfläche moderner, Inhalte und Diagramme gleich lassen.
+- **Geändert (nur Aussehen):** Schrift Inter, ruhigere Farben,
+  `.streamlit/config.toml` (grünes Farbschema), Kopfbereich mit Verlauf,
+  Statusleiste als helle Karte mit farbigem Rand, Kennzahlen und Diagramme in
+  Karten, Ampel-Skala als Farb-Chips (Farben = Ampelfarben im Code),
+  einheitliches Altair-Theme (Schrift, helles Gitter, ohne Achsenlinien),
+  Wochentag auf Deutsch.
+- **Geprüft:** AppTest ohne Fehler (05.11.2026, 15.06.2025). Optik selbst
+  nicht im Browser geprüft.
