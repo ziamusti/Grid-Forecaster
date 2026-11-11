@@ -3043,3 +3043,13 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   AppTest ohne Fehler (15.06.2025, 30.10.2026, 12.11.2026).
 - **Workflow:** Download der Energy-Charts-Wochendateien je Land und neuer
   Vorhersageschritt nach dem bisherigen Bundesland-Schritt.
+- **Workflow (ausgeführt):** Daten-Repo `daily_forecast.yml` um „Download
+  Energy-Charts generation per Bundesland“ und „Predict Bundesland main model“
+  ergänzt (Commit 5670ab2, nach Spiegelung des Codes nach GitHub). Die
+  Live-Datei enthält ab dem nächsten Lauf CO2 und 5 Quellen je Land.
+- **Diagramme und Text (ausgeführt):** `scripts/compare_bundesland_stages.py` →
+  `reports/bundesland_stage_comparison_v1` (R² je Testjahr CO2/Grünanteil,
+  R² der Quellen, R² je Land 2025 für CO2 und Grünanteil,
+  `metrics_pooled_and_bootstrap.csv`; Zahlen identisch zur Tabelle oben).
+  Word-Entwurf `docs/bachelorarbeit_bundesland_modell.docx` (Motivation,
+  Daten, Eingaben, Schema, 2 Tabellen, 5 Abbildungen, Modellwahl, Grenzen).
