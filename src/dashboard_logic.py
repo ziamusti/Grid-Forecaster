@@ -5,8 +5,10 @@ from urllib.error import URLError
 import pandas as pd
 
 
-LIVE_PREDICTIONS_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions.csv'
-BUNDESLAND_LIVE_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions_bundesland.csv'
+# Cumulative live histories (append_live_history.py in the daily workflow), so
+# earlier forecast days do not disappear when predictions.csv is overwritten.
+LIVE_PREDICTIONS_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions_history.csv'
+BUNDESLAND_LIVE_URL = 'https://raw.githubusercontent.com/ziamusti/grid-forecaster-data/main/predictions_bundesland_history.csv'
 RENEWABLE_SOURCES = ['wind_onshore', 'wind_offshore', 'solar', 'biomass', 'hydro', 'other_renewables']
 # Main model: separate XGBoost models, self-computed CO2 (SMARD + UBA factors),
 # renewable share = sum of the six predicted sources. History 2018-2026 comes
@@ -29,7 +31,10 @@ def read_main_model_file(path: Path | str) -> pd.DataFrame:
     frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                       'predicted_renewable_share_pct':'predicted_renewable',**SOURCE_COLUMNS})
     if set(SOURCE_COLUMNS.values()) <= set(frame.columns):
-        clip_sources(frame)
+        # A history file can mix rows with and without sources; only rows with
+        # all sources get clipped and their renewable share recomputed.
+        complete=frame[list(SOURCE_COLUMNS.values())].notna().all(axis=1)
+        part=frame.loc[complete].copy(); clip_sources(part); frame.loc[complete]=part
     return frame
 
 
@@ -59,6 +64,7 @@ def load_predictions(root: Path) -> pd.DataFrame:
     # the genuine operational forecasts wherever they overlap (e.g. 2026-11-02).
     extra_paths=[root/'reports/forecast_price_20261102_1d_v1/predictions.csv',
                  root/'reports/forecast_price_20261105_3d_v1/predictions.csv',
+                 root/'reports/forecast_price_20261108_3d_v1/predictions.csv',
                  root/'reports/backtest_price_20261027_20261104_v1/predictions.csv']
     for path in extra_paths:
         if not path.exists():
@@ -122,7 +128,8 @@ def read_bundesland_model_file(path: Path | str) -> pd.DataFrame:
     frame=frame[keep].rename(columns={'predicted_co2_gco2eq_kwh':'predicted_co2',
                                       'predicted_renewable_share_pct':'predicted_renewable',**sources,**actual})
     if set(sources.values()) <= set(frame.columns):
-        clip_bundesland_sources(frame)
+        complete=frame[list(sources.values())].notna().all(axis=1)
+        part=frame.loc[complete].copy(); clip_bundesland_sources(part); frame.loc[complete]=part
     frame['time_utc']=pd.to_datetime(frame.pop('target_time_utc'),utc=True)
     return frame
 
@@ -135,12 +142,15 @@ def load_bundesland_history(root: Path) -> pd.DataFrame:
         piece['time_utc']=pd.to_datetime(piece.pop('target_time_utc'),utc=True)
         pieces.append(piece)
     result=pd.concat(pieces,ignore_index=True)
-    # Backtest: real ERA5 history (not a forecast), fills the gap between the
-    # historical build (ends 2026-10-26) and the live pipeline start.
-    backtest_path=root/'reports/backtest_bundesland_20261027_20261104_v1/predictions.csv'
-    if backtest_path.exists():
-        backtest=read_bundesland_model_file(backtest_path).dropna(subset=['actual_co2','actual_renewable'])
-        result=pd.concat([result,backtest],ignore_index=True)
+    # After the training end: backtest 27.10.-04.11. (real ERA5 history, not a
+    # forecast) and the forecasts of 05.-07.11. and 08.-10.11. (real weather
+    # forecasts saved on those days). Hours without published actuals are kept;
+    # the dashboard shows predictions only.
+    for folder in ['backtest_bundesland_20261027_20261104_v1','forecast_bundesland_20261105_3d_v1',
+                   'forecast_bundesland_20261108_3d_v1']:
+        path=root/'reports'/folder/'predictions.csv'
+        if path.exists():
+            result=pd.concat([result,read_bundesland_model_file(path)],ignore_index=True)
     result=result.sort_values(['bundesland','time_utc']).drop_duplicates(['bundesland','time_utc'],keep='last').reset_index(drop=True)
     return result
 

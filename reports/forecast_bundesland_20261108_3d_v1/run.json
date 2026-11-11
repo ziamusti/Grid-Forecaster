@@ -1,0 +1,63 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-11T00:41:14.849110+00:00",
+  "hours": 72,
+  "bundeslaender": [
+    "Baden-Württemberg",
+    "Bayern",
+    "Berlin",
+    "Brandenburg",
+    "Bremen",
+    "Hamburg",
+    "Hessen",
+    "Mecklenburg-Vorpommern",
+    "Niedersachsen",
+    "Nordrhein-Westfalen",
+    "Rheinland-Pfalz",
+    "Saarland",
+    "Sachsen",
+    "Sachsen-Anhalt",
+    "Schleswig-Holstein",
+    "Thüringen"
+  ],
+  "pooled": true,
+  "target_start_utc": "2026-11-08T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-11T00:00:00+00:00",
+  "weather_source": "Open-Meteo Forecast API (operational, not ERA5)",
+  "weather_manifest_sha256": "e2affd5f77f605c2685b2dd31d5f9c21da7a329c4ab8b92af90384be1623105a",
+  "capacity_source": "data/live_capacity/mastr_monthly_reconstructed_bundesland.csv",
+  "models": {
+    "target_co2_gco2eq_kwh": {
+      "model": "reports/final_hist_gradient_boosting_bundesland_co2_2015_2026_v1/hist_gradient_boosting_bundesland_co2_target_co2_gco2eq_kwh.joblib",
+      "training_end": "2024-12-31T23:00:00Z",
+      "model_sha256": "a28e833e7e565ed0b71dd44b69eacc76faec3c63783406f5298811527a1726c0"
+    },
+    "target_renewable_share_pct": {
+      "model": "reports/final_hist_gradient_boosting_bundesland_renewable_share_2015_2026_v1/hist_gradient_boosting_bundesland_renewable_share_target_renewable_share_pct.joblib",
+      "training_end": "2024-12-31T23:00:00Z",
+      "model_sha256": "adc98d28210bc6995581c0c6d4ea4f0f78de59b5518ce1cfb7fcfb0622390820"
+    }
+  },
+  "operational": true,
+  "retrospective_era5": false,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "limitations": [
+    "Gepooltes Modell (ein Modell je Zielgroesse fuer alle 16 Bundeslaender)",
+    "Kapazitaet je Bundesland ist ein periodisch aktualisierter Snapshot, nicht taeglich automatisch aktualisiert",
+    "Reale Wettervorhersage, noch nicht veroeffentlichte Ist-Werte; Vorhersagegenauigkeit des Wetters selbst hier nicht bewertet"
+  ],
+  "main_model_xgboost_bundesland": {
+    "model": "reports/final_xgboost_bundesland_2015_20261026_v1/xgboost_bundesland_stage2.joblib",
+    "model_sha256": "4506acb54cbdab1b386b814b4c46c5d3e179a293f53a22eb7c87c6bb3fa89a20",
+    "model_training_end": "2026-10-26T23:00:00+00:00",
+    "national_inputs": "../reports/forecast_price_20261108_3d_v1",
+    "state_generation_weeks": [
+      "week_2026_43.json",
+      "week_2026_44.json"
+    ],
+    "renewable_share": "sum of the five predicted sources (cut off at 0)",
+    "previous_hist_gradient_boosting_columns_kept": true
+  }
+}

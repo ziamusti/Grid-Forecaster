@@ -1,0 +1,37 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-11T00:41:03.524828+00:00",
+  "hours": 72,
+  "target_start_utc": "2026-11-08T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-11T00:00:00+00:00",
+  "model_training_end": "2026-10-26 23:00:00+00:00",
+  "model_sha256": "d5090aa616f381a6d04163eaad2b419e2fad42a9afff3cdb06fdf4c9aa8a5c45",
+  "weather_source": "Open-Meteo Forecast API (operational, not ERA5)",
+  "weather_manifest_sha256": "e2affd5f77f605c2685b2dd31d5f9c21da7a329c4ab8b92af90384be1623105a",
+  "operational": true,
+  "retrospective_era5": false,
+  "targets_read": false,
+  "refit": false,
+  "clipping": false,
+  "limitations": [
+    "Real weather forecast, not yet-published actuals; forecast accuracy itself not evaluated here",
+    "SMARD/price lag inputs are fresh current-snapshot revisions, not as-issued history",
+    "Only CO2 predicted here; renewable share not part of this run"
+  ],
+  "summary": {
+    "predicted_co2_gco2eq_kwh": {
+      "min": 481.07507031794046,
+      "max": 711.0831137692489,
+      "mean": 627.5140531955738
+    }
+  },
+  "main_model_xgboost_selfco2": {
+    "model": "reports/final_xgboost_selfco2_2015_20261026_v1/xgboost_selfco2_separate.joblib",
+    "model_sha256": "ca826c5211c83d4e744b5a89c3c69d9c55c06c93c837791b4973c9eca5260c4f",
+    "model_training_end": "2026-10-26T23:00:00+00:00",
+    "co2": "self-computed (SMARD + UBA factors, direct emissions, gCO2/kWh)",
+    "renewable_share": "sum of the six predicted sources; direct model kept as predicted_renewable_share_direct_pct",
+    "clipping": "source shares cut off at 0 before summing",
+    "previous_hist_gradient_boosting_columns_kept": true
+  }
+}

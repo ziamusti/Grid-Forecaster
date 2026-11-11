@@ -3053,3 +3053,62 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   `metrics_pooled_and_bootstrap.csv`; Zahlen identisch zur Tabelle oben).
   Word-Entwurf `docs/bachelorarbeit_bundesland_modell.docx` (Motivation,
   Daten, Eingaben, Schema, 2 Tabellen, 5 Abbildungen, Modellwahl, Grenzen).
+## Bluehands Carbon-Aware-Computing eingeordnet (11.11.2026)
+
+- **Auftrag:** Erklären, was die Referenz „Carbon-Aware-Computing
+  (bluehands) – Referenz-SDK, später für Runtime-Integration“ bedeutet.
+- **Geplant:** Verlinktes Repository und README prüfen und die mögliche Rolle
+  im Grid-Forecaster von bereits umgesetzten Funktionen abgrenzen.
+- **Ausgeführt:** Öffentliches Repository
+  `https://github.com/bluehands/Carbon-Aware-Computing` am 11.11.2026 gelesen.
+  Keine Installation, Codeänderung, Datenaufbereitung oder Modellberechnung.
+- **Geprüftes Ergebnis:** Das .NET-orientierte Open-Source-Projekt verschiebt
+  aufschiebbare Rechenaufgaben innerhalb eines Zeitfensters auf einen laut
+  Prognose emissionsärmeren Zeitpunkt. Es bietet unter anderem eine Bibliothek,
+  Web-APIs, Hangfire-Anbindung und PowerShell-Befehle. Für Deutschland nutzt es
+  eigene Prognosedaten aus Energy-Charts; es ist daher nicht automatisch die
+  Laufzeitkomponente des Grid-Forecasters und verwendet nicht dessen Modell.
+- **Einordnung:** Als Architektur- und Schnittstellenreferenz für eine spätere
+  Ausführungsschicht geeignet. Eine direkte Integration ist derzeit nicht
+  empfohlen, bevor Anforderungen, Programmiersprache, Scheduler und Vergleich
+  mit einer kleinen projektspezifischen Python-Lösung feststehen. Die
+  Vorhersage ist vom späteren tatsächlichen Start eines Jobs zu unterscheiden.
+
+## Sichtbares Frontend von Bluehands geprüft (11.11.2026)
+
+- **Auftrag:** Klären, wo das Frontend des Bluehands-Projekts sichtbar ist.
+- **Geplant:** Repository-Ordner `web`, öffentliche Projektseite und
+  API-Oberfläche prüfen. Keine lokale Ausführung oder Implementierung.
+- **Ausgeführt:** `web/index.html`, `https://www.carbon-aware-computing.com/`,
+  die Startseite der Forecast-API und deren Swagger-Link geprüft.
+- **Geprüftes Ergebnis:** Die öffentliche Projektseite ist eine statische
+  Informationsseite mit Erklärung, Grafiken, Diensten und Codebeispielen,
+  aber kein interaktives Prognose-Dashboard. Die Forecast-Adresse zeigt auf
+  der Startseite nur den Azure-Functions-Standardbildschirm; die Swagger-UI
+  ist eine technische API-Testoberfläche. Das Repository liefert daher kein
+  mit dem Grid-Forecaster vergleichbares Endnutzer-Frontend.
+- **Einordnung:** Zum visuellen Vergleich nur die Informationsseite öffnen.
+  Für die Bachelorarbeit Bluehands als Runtime-/API-Referenz einordnen, nicht
+  als Vorlage für das vorhandene Streamlit-Dashboard. Keine Code- oder
+  Datenänderung und kein Training ausgeführt.
+
+
+## Lücken im Dashboard geschlossen, Live-Verlauf eingeführt (11.11.2026, ausgeführt)
+
+- **Ursachen (geprüft):** (1) Bundesland 31.10.: Zeilen ohne Istwert (Berlin ab
+  30.10. 22 Uhr, Energy-Charts) wurden mit entfernt, obwohl die Vorhersage
+  vorlag. (2) 05.-09.11. (Länder) bzw. 08.-09.11. (national): nie
+  vorhergesagt. (3) Die Live-Datei wird täglich überschrieben → frühere Tage
+  (z. B. 11.11.) verschwanden.
+- **Behoben:** (1) Zeilen ohne Istwert bleiben. (2) Mit den damals gespeicherten
+  echten Wettervorhersagen nachgerechnet: `forecast_price_20261108_3d_v1`
+  (national, Hauptmodell) sowie `forecast_bundesland_20261105_3d_v1` und
+  `…20261108_3d_v1` (neues Bundesland-Modell; nationale Eingaben aus den
+  passenden nationalen Ordnern). Alle nach dem Trainingsende, also ungesehen.
+  (3) `scripts/append_live_history.py` hängt jede Live-Vorhersage an
+  `predictions_history.csv` / `predictions_bundesland_history.csv` im
+  Daten-Repo an (neuester Wert gewinnt); das Dashboard liest diese.
+  Startbestand aus den Commits e1f545b (10.-12.11.) und 475dc8b (12.-14.11.).
+- **Geprüft:** 25.10.-14.11.2026 jeder Tag 24 Stunden, national und je Land.
+  **Grenze:** Länderwerte für 11.11. stammen noch vom alten HistGB-Modell
+  (ohne Quellen), da die Bundesland-Live-Datei dieses Laufs noch alt war.

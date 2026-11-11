@@ -181,9 +181,7 @@ else:
     chosen_state=st.selectbox('Bundesland',states,index=states.index('Berlin') if 'Berlin' in states else 0)
     bl_day=bl_frame.loc[(bl_frame.bundesland==chosen_state)&(bl_frame.time_utc.dt.date==selected)].copy()
     if bl_day.empty:
-        st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor — historisch '
-                'deckt das Bundesland-Modell 2018–04.11.2026 ab, danach die laufende Live-Vorhersage; '
-                'dazwischen (05.–09.11.2026) ist noch eine Lücke.')
+        st.info(f'Für {selected:%d.%m.%Y} liegt keine Vorhersage für {chosen_state} vor.')
     else:
         bl_day['hour']=bl_day.time_utc.dt.hour
         bl_co2_df=bl_day.assign(reihe='CO₂-Intensität')
