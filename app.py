@@ -528,9 +528,12 @@ with tab_job:
                   help=f'Mittel über alle {plan["starts"]} erlaubten Startzeiten: {plan["random_co2"]:.0f} gCO₂/kWh')
         span=job_forecast.loc[(job_forecast.index>=job_earliest.floor('h').tz_convert('UTC'))&
                               (job_forecast.index<job_deadline.tz_convert('UTC'))].reset_index()
-        # Naive local times so Vega shows German time regardless of the viewer's time zone.
-        span['zeit']=span.time_utc.dt.tz_convert(BERLIN).dt.tz_localize(None)
-        naive=lambda t:t.tz_convert(BERLIN).tz_localize(None)
+        # Times are sent as ISO strings in German local time (no tz suffix): Vega then shows German
+        # time for every viewer, and no datetime/Arrow conversion on the server can drop the rows.
+        naive=lambda t:t.tz_convert(BERLIN).strftime('%Y-%m-%dT%H:%M:%S')
+        span=pd.DataFrame({'zeit':[naive(t) for t in span.time_utc],'predicted_co2':span.predicted_co2.to_numpy(float),
+                           'predicted_renewable':span.predicted_renewable.to_numpy(float)})
+        x_domain=[naive(job_earliest.floor('h')),naive(job_deadline)]
         job_hover=alt.selection_point(nearest=True,on='pointerover',fields=['zeit'],empty=False)
         job_window=alt.Chart(pd.DataFrame({'a':[naive(plan['start'])],'b':[naive(plan['end'])]})).mark_rect(
             color='#8fd3ac',opacity=.35).encode(x='a:T',x2='b:T')
@@ -543,7 +546,8 @@ with tab_job:
             align='left',dx=5,baseline='top',fontSize=11,color='#2f6b48',fontWeight='bold').encode(
             x='a:T',y=alt.value(6),text=alt.value('bestes Fenster'))
         job_line=alt.Chart(span).mark_line(strokeWidth=2.2,color='#263746').encode(
-            x=alt.X('zeit:T',title='Deutsche Zeit',axis=alt.Axis(format='%d.%m. %H:%M',labelAngle=0,tickCount=8)),
+            x=alt.X('zeit:T',title='Deutsche Zeit',scale=alt.Scale(domain=x_domain),
+                    axis=alt.Axis(format='%d.%m. %H:%M',labelAngle=0,tickCount=8)),
             y=alt.Y('predicted_co2:Q',title='gCO₂/kWh (Vorhersage)',scale=alt.Scale(zero=False)))
         job_points=job_line.mark_point(size=70,filled=True,color='#263746').encode(
             opacity=alt.condition(job_hover,alt.value(1),alt.value(0)),
