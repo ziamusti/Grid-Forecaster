@@ -1,0 +1,10 @@
+Kennzahl,Test 2018–2026,Rückblick (archivierte Vortagesprognose) (344 Std.)
+MAE CO₂ (gCO₂/kWh),40.97,26.19
+Mittlere Abweichung CO₂ (gCO₂/kWh),12.9,-2.881
+MAE Grünanteil (Prozentpunkte),3.98,4.442
+Mittlere Abweichung Grünanteil (Prozentpunkte),,2.775
+R² CO₂,0.85,0.888
+R² Grünanteil,0.917,0.823
+Ampel richtig (%),,84.593
+Bestes 3-h-Fenster getroffen (%),,35.714
+Mehr-CO₂ im gewählten Fenster (gCO₂/kWh),,5.502

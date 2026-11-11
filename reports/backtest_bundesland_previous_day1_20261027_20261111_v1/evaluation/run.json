@@ -1,0 +1,15 @@
+{
+  "label": "R\u00fcckblick (archivierte Vortagesprognose)",
+  "predictions_file": "../reports/backtest_bundesland_previous_day1_20261027_20261111_v1/predictions.csv",
+  "period_utc": [
+    "2026-10-27T00:00:00+00:00",
+    "2026-11-12T00:00:00+00:00"
+  ],
+  "rows_evaluated": 3808,
+  "hours_evaluated": 238,
+  "last_hour": "2026-11-05T21:00:00+00:00",
+  "window_hours": 3,
+  "window_days": 144,
+  "truth": "Energy-Charts per-state generation (fresh download), UBA factors as model target",
+  "test_reference": "reports/xgboost_bundesland_stage2_expanding_v1/metrics.csv"
+}

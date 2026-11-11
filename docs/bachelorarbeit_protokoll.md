@@ -3153,3 +3153,122 @@ Nachträglich rekonstruierte Angaben werden ausdrücklich als solche markiert.
   Wochentag auf Deutsch.
 - **Geprüft:** AppTest ohne Fehler (05.11.2026, 15.06.2025). Optik selbst
   nicht im Browser geprüft.
+
+## Live-Vergleich mit Electricity Maps und SMARD, Auswerte-Skript (11.11.2026, ausgeführt / geplant)
+
+- **Ausgeführt (Scratchpad, nur Lesen):** Hauptmodell (Dashboard-Werte)
+  09.-11.11.2026 gegen Electricity Maps API v4 (`past-range`, DE, stündlich,
+  `flowTraced=false`, lifecycle; Abruf 11.11.2026; 71 Stunden, ab 10.11.
+  09:00 UTC als geschätzt markiert) und gegen frisch geladene SMARD-Erzeugung
+  05.-10.11. (mit UBA-Faktoren wie das Modellziel; vollständig bis 10.11.
+  07:00 UTC).
+- **Ergebnis (selbst berechnet, vorläufig):** 05.11. 00:00-10.11. 07:00 UTC,
+  128 Stunden, Maßstab SMARD: MAE CO2 18,0 g/kWh (Mittel −2,6), MAE
+  Grünanteil 5,1 Prozentpunkte (Mittel +4,7, Modell zu hoch), Ampel 82 %
+  richtig, bestes 3-h-Fenster an 1 von 5 Tagen genau getroffen (im Mittel
+  7,3 g/kWh mehr als das beste). Electricity Maps liegt über SMARD: CO2
+  +38 g/kWh (Lebenszyklus), Grünanteil +4,6 Prozentpunkte (eigene
+  Abgrenzung, Ursache nicht geprüft).
+- **Korrektur:** Eine frühere Aussage im Gespräch („Modell unterschätzt den
+  Grünanteil um ~5 Prozentpunkte“) beruhte nur auf dem Vergleich mit
+  Electricity Maps und war falsch; gegen SMARD überschätzt das Modell.
+- **Neu:** `scripts/evaluate_live_main_model.py` (kein Training): lädt SMARD
+  (und, falls Schlüssel vorhanden, Electricity Maps) für den Zeitraum neu,
+  vergleicht mit den Dashboard-Vorhersagen, schreibt nach
+  `reports/live_evaluation_<start>_<ende>/` Kennzahlen, Tabelle Live vs. Test,
+  Fenster je Tag, stündliche Werte und das Bild „Fehler pro Tag“.
+  Testlauf 05.-11.11. in den Scratchpad reproduziert die Zahlen oben.
+- **Geplant:** Auswertung 05.11.-04.12.2026 (30 Tage, nur echte Vorhersagen;
+  27.10.-04.11. ist Rückblick mit ERA5 und bleibt außen vor), ausführen ab
+  etwa 11.12.2026, wenn SMARD und Electricity Maps endgültig sind:
+  `cd scripts && ../.venv-stage0/bin/python evaluate_live_main_model.py`
+
+- **Korrektur (11.11.2026, geprüft an Abrufzeiten):** Nicht alle Stunden ab
+  05.11. sind echte Vorhersagen. Wetter-Abruf laut Manifest: 05.11. um 14:55
+  UTC (für 05.-07.11.), 08.11. um 21:08 UTC (für 08.-10.11.); Live-Verlauf im
+  Daten-Repo: 10.11. am 10.11. 23:17 UTC, 11.11. zuletzt am 11.11. 14:16 UTC
+  berechnet. Echte Vorhersagen (Wetter vor Tagesbeginn abgerufen) nur am 06.,
+  07. und 09.11. Das Hauptmodell wurde dort nachträglich auf die vorab
+  gespeicherten Eingaben angewendet (Modell und Eingaben standen vorher fest).
+  Zwischenstand nur diese 72 Stunden (selbst berechnet): MAE CO2 16,4 g/kWh
+  (Mittel −7,5), MAE Grünanteil 5,5 Prozentpunkte (Mittel +5,4), Ampel
+  73,6 % richtig. Beispieltag für die Arbeit: 09.11. (MAE CO2 17,6, Grünanteil
+  3,3; Electricity Maps − SMARD: CO2 +46,3 g/kWh, Grünanteil +7,1).
+- **Geänderter Plan:** Auswertung 12.11.-11.12.2026 (Standard im Skript),
+  ausführen ab etwa 18.12.2026. Vorher prüfen, dass im Zeitraum kein Lauf
+  während eines Tages diesen Tag überschrieben hat (Verlauf behält den
+  neuesten Wert); besser: Abrufzeit je Vorhersage mitspeichern (offen, nicht
+  umgesetzt).
+
+## Rückblick mit archivierten Vortagesprognosen 27.10.-11.11.2026 (11.11.2026, ausgeführt)
+
+- **Auftrag:** Mehr Tage nach Trainingsende auswerten, ohne auf die
+  30-Tage-Live-Auswertung zu warten. 08.10.-26.10. ist nicht zulässig
+  (Trainingsdaten des finalen Modells).
+- **Quelle geprüft:** Open-Meteo Previous Runs API, `*_previous_day1` =
+  „value predicted 24 hours before valid time“ (Doku, Standardmodell Best
+  Match, Archiv meist ab 01/2024). Alle fünf benötigten Wettervariablen
+  verfügbar.
+- **Ausgeführt (kein Training):** `scripts/backtest_previous_day_forecast.py`
+  lädt das Archiv für die 23 Standorte (`data/raw/weather_previous_day1_20261027_20261111/`),
+  baut die 137 Eingaben wie im Live-Betrieb und wendet das finale
+  Hauptmodell mit denselben Grenzen an
+  (`reports/backtest_previous_day1_20261027_20261111_v1/`, 384 Stunden).
+  `evaluate_live_main_model.py` hat dafür `--predictions` und `--label`
+  bekommen; Auswertung in `.../evaluation/`.
+- **Ergebnis (selbst berechnet, Maßstab SMARD, 27.10. bis 10.11. 07:00 UTC,
+  344 Stunden):** MAE CO2 26,2 g/kWh (Mittel −2,9), MAE Grünanteil 4,44
+  Prozentpunkte (Mittel +2,8), R² 0,89 / 0,82, Ampel 84,6 % richtig, bestes
+  3-h-Fenster an 5 von 14 Tagen genau getroffen, im Mittel 5,5 g/kWh über
+  dem besten Fenster.
+- **Gegenproben:** (1) 06./07./09.11. Archiv vs. echte Vorhersage: MAE CO2
+  20,9 vs. 16,4, Grünanteil 5,01 vs. 5,52 – ähnliche Größe, stündlich aber
+  verschieden (mittlerer Unterschied 19,2 g/kWh, 2,1 Prozentpunkte), da
+  andere Vorlaufzeit/Modellmischung. (2) 27.10.-04.11. Archiv vs. gemessenes
+  Wetter (ERA5): MAE CO2 28,8 vs. 29,2, Grünanteil 4,02 vs. 2,92 – der Fehler
+  der Wettervorhersage wirkt vor allem auf den Grünanteil.
+- **Einordnung:** Nachgebaute Vortagesprognose, keine Live-Vorhersage; getrennt
+  von der Live-Auswertung 12.11.-11.12. berichten. SMARD-Werte der letzten
+  Tage können sich noch ändern.
+- **Nachtrag (11.11.2026):** Auch der 02.11. ist eine echte Vorhersage
+  (Wetter abgerufen 01.11. 17:58 UTC, Hauptmodell angewendet). Echte Tage
+  damit 02., 06., 07., 09.11. (96 Stunden, selbst berechnet): MAE CO2
+  18,1 g/kWh (Mittel −3,2), MAE Grünanteil 5,29 Prozentpunkte (Mittel +5,0),
+  Ampel 77,1 %, bestes 3-h-Fenster an 2 von 4 Tagen genau, im Mittel
+  2,1 g/kWh über dem besten. Archiv an denselben Tagen: MAE CO2 19,5,
+  Grünanteil 4,99. Text für die Arbeit: `docs/bachelorarbeit_live_vorhersage.docx`
+  (5.7.1-5.7.4).
+
+## Bundesland-Modell: Rückblick mit archivierten Vortagesprognosen (11.11.2026, ausgeführt)
+
+- **Ausgeführt (kein Training):** `scripts/backtest_bundesland_previous_day.py`
+  baut die 45 Eingaben (Stufe 2) für 27.10.-11.11.2026 mit dem bereits
+  geladenen Open-Meteo-Archiv (`*_previous_day1`, gleiche 23 Stationen),
+  nationalen 168-h-Lags aus dem nationalen Rückblick und eigener
+  Landeserzeugung 336 h vorher; finales Bundesland-Modell (Trainingsende
+  26.10.) mit denselben Grenzen
+  (`reports/backtest_bundesland_previous_day1_20261027_20261111_v1/`, 6.144 Zeilen).
+- **Auswertung:** `scripts/evaluate_bundesland_live.py` (neu; lädt
+  Energy-Charts-Wochen frisch in einen eigenen Ordner, Ziel wie im Training
+  über `build_bundesland_v2.targets_from`; Kennzahlen gesamt und je Land,
+  Ampel, bestes 3-h-Fenster je Land und Tag; Vergleich mit dem Test Stufe 2,
+  MAE über alle Testjahre nach Stunden gewichtet). Standard für später:
+  12.11.-11.12.2026 aus den Dashboard-Werten.
+- **Ergebnis (selbst berechnet, Maßstab Energy-Charts, 27.10. bis 05.11.
+  21:00 UTC, 238 Stunden × 16 Länder; Woche 46 noch nicht veröffentlicht):**
+  MAE CO2 61,6 g/kWh (Test 61,7), Mittel −30,6; MAE Grünanteil 10,2
+  Prozentpunkte (Test 6,8), Mittel +6,9; Ampel 71 % richtig; bestes
+  3-h-Fenster 12 % genau getroffen, im Mittel 22,8 g/kWh über dem besten.
+  Am schwächsten Sachsen-Anhalt, Mecklenburg-Vorpommern, Brandenburg (CO2),
+  Niedersachsen, Hessen, Mecklenburg-Vorpommern (Grünanteil).
+- **Gegenprobe gemessenes Wetter (ERA5), gleiche 3.456 Zeilen:** MAE CO2
+  56,2 vs. 62,0 (Archiv), Grünanteil 8,60 vs. 10,03; Mittel Grünanteil
+  +6,75 vs. +6,63. Der zu hohe Grünanteil tritt also auch mit gemessenem
+  Wetter auf und kommt nicht von der Wettervorhersage; Ursache nicht
+  untersucht (möglich: vorläufige Energy-Charts-Schätzwerte der letzten
+  Wochen, Jahreszeit, Kapazitätseingaben).
+- **Text für die Arbeit:** `docs/bachelorarbeit_bundesland_live.docx`
+  (Beispieltag 03.11.2026 Schleswig-Holstein/Bayern aus dem Rückblick,
+  Tabelle gesamt, Bild je Land, Gegenprobe ERA5, Plan 12.11.-11.12.;
+  Auswertung frühestens ab etwa 20.12.2026). Am Beispieltag Bayern:
+  Grünanteil im Mittel +17,4 Prozentpunkte, auch nachts (etwa 60 % statt 35 %).

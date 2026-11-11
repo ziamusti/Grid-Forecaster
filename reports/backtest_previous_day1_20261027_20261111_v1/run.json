@@ -1,0 +1,20 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-11T17:25:07.927074+00:00",
+  "hours": 384,
+  "target_start_utc": "2026-10-27T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-12T00:00:00+00:00",
+  "model": "reports/final_xgboost_selfco2_2015_20261026_v1/xgboost_selfco2_separate.joblib",
+  "model_sha256": "ca826c5211c83d4e744b5a89c3c69d9c55c06c93c837791b4973c9eca5260c4f",
+  "model_training_end": "2026-10-26T23:00:00+00:00",
+  "refit": false,
+  "weather_source": "Open-Meteo Previous Runs API, *_previous_day1 (archived forecast, 24 h before valid time)",
+  "weather_dir": "data/raw/weather_previous_day1_20261027_20261111",
+  "weather_manifest_sha256": "781d1670279aa05045e70a50b1a82b1402f7b51fbfa9a3ba14d77daca4bb00c1",
+  "clipping": "source shares >= 0, scaled to 100 % if their sum exceeds it; CO2 >= 0",
+  "limitations": [
+    "Reconstruction after the fact with archived forecasts, not a live forecast",
+    "Best Match model mix of the archive may differ from the live Forecast API",
+    "SMARD/price lag inputs are current revised snapshots, not as-issued"
+  ]
+}

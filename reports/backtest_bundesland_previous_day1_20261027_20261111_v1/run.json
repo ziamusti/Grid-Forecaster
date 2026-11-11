@@ -1,0 +1,25 @@
+{
+  "status": "complete",
+  "created_utc": "2026-11-11T17:54:37.434623+00:00",
+  "rows": 6144,
+  "hours": 384,
+  "target_start_utc": "2026-10-27T00:00:00+00:00",
+  "target_end_exclusive_utc": "2026-11-12T00:00:00+00:00",
+  "model": "reports/final_xgboost_bundesland_2015_20261026_v1/xgboost_bundesland_stage2.joblib",
+  "model_sha256": "4506acb54cbdab1b386b814b4c46c5d3e179a293f53a22eb7c87c6bb3fa89a20",
+  "model_training_end": "2026-10-26T23:00:00+00:00",
+  "refit": false,
+  "weather_source": "Open-Meteo Previous Runs API, *_previous_day1 (archived forecast, 24 h before valid time)",
+  "weather_dir": "data/raw/weather_previous_day1_20261027_20261111",
+  "national_inputs": "reports/backtest_previous_day1_20261027_20261111_v1",
+  "state_generation_weeks": [
+    "week_2026_42.json",
+    "week_2026_43.json",
+    "week_2026_44.json"
+  ],
+  "clipping": "source shares >= 0, scaled to 100 % if their sum exceeds it; CO2 >= 0",
+  "limitations": [
+    "Reconstruction after the fact with archived forecasts, not a live forecast",
+    "Lag inputs (SMARD, prices, Energy-Charts) are current snapshots, not as-issued"
+  ]
+}

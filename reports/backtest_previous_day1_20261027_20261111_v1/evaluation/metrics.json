@@ -1,0 +1,63 @@
+{
+  "label": "Rückblick (archivierte Vortagesprognose)",
+  "predictions_file": "../reports/backtest_previous_day1_20261027_20261111_v1/predictions.csv",
+  "period_utc": [
+    "2026-10-27T00:00:00+00:00",
+    "2026-11-12T00:00:00+00:00"
+  ],
+  "hours_expected": 384,
+  "hours_with_prediction": 384,
+  "missing_prediction_hours": 0,
+  "hours_evaluated": 344,
+  "last_hour_with_smard": "2026-11-10T07:00:00+00:00",
+  "co2": {
+    "mae": 26.19020403071969,
+    "bias": -2.880615999539312,
+    "r2": 0.8883977758425778
+  },
+  "renewable": {
+    "mae": 4.441747008662386,
+    "bias": 2.7750277653671347,
+    "r2": 0.8233427333480587
+  },
+  "test_reference": {
+    "mae_co2": 40.97,
+    "mae_renewable": 3.98,
+    "bias_co2": 12.9
+  },
+  "ampel": {
+    "hit_rate": 0.8459302325581395,
+    "confusion": {
+      "Gelb": {
+        "Gelb": 106,
+        "Grün": 3,
+        "Rot": 30
+      },
+      "Grün": {
+        "Gelb": 15,
+        "Grün": 16,
+        "Rot": 0
+      },
+      "Rot": {
+        "Gelb": 5,
+        "Grün": 0,
+        "Rot": 169
+      }
+    }
+  },
+  "best_window": {
+    "hours": 3,
+    "days": 14,
+    "hit_rate": 0.35714285714285715,
+    "mean_extra_co2": 5.502084905596021
+  },
+  "truth": "SMARD generation, UBA factors (same as model target), fresh download; recent days may still be revised",
+  "electricitymaps": {
+    "hours": 344,
+    "estimated_hours": 0,
+    "em_minus_smard_co2": 31.733907517902544,
+    "em_minus_smard_renewable": 4.6867413661389365,
+    "model_vs_em_corr_co2": 0.9375783929000033,
+    "note": "lifecycle CO2 and own renewable definition: plausibility check only"
+  }
+}
