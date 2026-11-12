@@ -171,7 +171,7 @@ def state_borders():
     return 'data:application/json;base64,'+base64.b64encode(raw).decode('ascii')
 
 
-def bundesland_map(rows: pd.DataFrame, height: int = 560):
+def bundesland_map(rows: pd.DataFrame, height: int = 560, time_label: str = None):
     # One colour per Bundesland by traffic light of the predicted renewable
     # share; hover shows a card with time, renewable share, CO2 and the
     # strongest renewable source.
@@ -179,7 +179,7 @@ def bundesland_map(rows: pd.DataFrame, height: int = 560):
            'predicted_hydro':'Wasser','predicted_other_renewables':'Sonstige'}
     table=rows[['bundesland','time_utc','predicted_co2','predicted_renewable']].copy()
     table['Ampel']=table.predicted_renewable.map(lambda value:category(value)[0])
-    table['Zeit']=table.time_utc.dt.strftime('%d.%m.%Y, %H:00 UTC')
+    table['Zeit']=time_label if time_label else table.time_utc.dt.strftime('%d.%m.%Y, %H:00 UTC')
     sources=[c for c in names if c in rows.columns]
     if sources:
         strongest=rows[sources].idxmax(axis=1).map(names)
@@ -409,19 +409,33 @@ with tab_bl:
     if bl_frame is None or bl_frame.empty:
         st.info('Noch keine Bundesland-Vorhersage verfügbar.')
     else:
-        map_hour=st.slider('Stunde für die Karte (UTC)',0,23,12,help='Karte aller Bundesländer für diese Stunde des gewählten Tages.')
-        map_time=pd.Timestamp(selected).tz_localize('UTC')+pd.Timedelta(hours=map_hour)
-        map_rows=bl_frame.loc[bl_frame.time_utc==map_time]
+        map_mode=st.segmented_control('Ansicht der Karte',['Einzelne Stunde','Tagesdurchschnitt'],default='Einzelne Stunde',
+                                      key='map_mode',help='Tagesdurchschnitt: Mittel aller Stunden des gewählten Tages (UTC) je Bundesland.') or 'Einzelne Stunde'
+        day_start=pd.Timestamp(selected).tz_localize('UTC')
+        if map_mode=='Tagesdurchschnitt':
+            day_rows=bl_frame.loc[(bl_frame.time_utc>=day_start)&(bl_frame.time_utc<day_start+pd.Timedelta(days=1))]
+            numeric=[c for c in day_rows.columns if c.startswith('predicted_')]
+            map_rows=day_rows.groupby('bundesland',as_index=False)[numeric].mean()
+            map_rows['time_utc']=day_start
+            hours_in_day=day_rows.time_utc.nunique()
+            map_label=f'{day_start:%d.%m.%Y}, Tagesdurchschnitt ({hours_in_day} Stunden)'
+            empty_text=f'Für den {day_start:%d.%m.%Y} liegt keine Bundesland-Vorhersage vor.'
+        else:
+            map_hour=st.slider('Stunde für die Karte (UTC)',0,23,12,help='Karte aller Bundesländer für diese Stunde des gewählten Tages.')
+            map_time=day_start+pd.Timedelta(hours=map_hour)
+            map_rows=bl_frame.loc[bl_frame.time_utc==map_time]
+            map_label=f'{map_time:%d.%m.%Y, %H:00} UTC'
+            empty_text=f'Für {map_time:%d.%m.%Y, %H:00} UTC liegt keine Bundesland-Vorhersage vor.'
         if map_rows.empty:
-            st.info(f'Für {map_time:%d.%m.%Y, %H:00} UTC liegt keine Bundesland-Vorhersage vor.')
+            st.info(empty_text)
         else:
             map_col,rank_col=st.columns([3,2],gap='large')
             legend_html=''.join(f'<span><i style="background:{category(v)[1]}"></i>{t}</span>'
                                 for t,v in [('Grün ≥ 60 %',100),('Gelb 40–60 %',50),('Rot < 40 %',0)])
             with map_col:
-                st.markdown(f'<div class="gf-card-title">Grünanteil je Bundesland · {map_time:%d.%m.%Y, %H:00} UTC</div>'
+                st.markdown(f'<div class="gf-card-title">Grünanteil je Bundesland · {map_label}</div>'
                             f'<div class="gf-legend">{legend_html}</div>',unsafe_allow_html=True)
-                st.altair_chart(bundesland_map(map_rows,height=640),use_container_width=True)
+                st.altair_chart(bundesland_map(map_rows,height=640,time_label=map_label),use_container_width=True)
             with rank_col:
                 st.markdown('<div class="gf-card-title">Rangfolge</div>'
                             '<div class="gf-legend"><span>gestrichelt: Grenzen 40 % und 60 %</span></div>',
